@@ -12,75 +12,88 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { userService } from "@/lib/services/userService"
 import { ApiError } from "@/lib/api"
 
-const loginSchema = z.object({
+const signupSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 })
 
-type LoginFormData = z.infer<typeof loginSchema>
+type SignUpFormData = z.infer<typeof signupSchema>
 
-interface LoginResponse {
-  status: string
-  message: string
-  data: {
-    user_id: string
-    email: string
-    backend_tokens: {
-      access_token: string
-      refresh_token: string
-    }
-  }
-}
-
-export function LoginForm() {
+export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
 
-  const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<SignUpFormData>({
+    resolver: zodResolver(signupSchema),
     defaultValues: {
       email: "",
       password: "",
+      confirmPassword: "",
     },
   })
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: SignUpFormData) => {
     setIsLoading(true)
     setError(null)
 
     try {
-      const result = await userService.login(data.email, data.password)
+      const response = await userService.createUser({
+        email: data.email,
+        password: data.password,
+        platform: "CREDENTIAL",
+      })
       
-      if (result.status === "success") {
-        // Store tokens in localStorage (you might want to use a more secure method)
-        localStorage.setItem("access_token", result.data.backend_tokens.access_token)
-        localStorage.setItem("refresh_token", result.data.backend_tokens.refresh_token)
-        localStorage.setItem("user_id", result.data.user_id)
-        
-        // Redirect to dashboard
-        console.log("Login successful:", result)
-        window.location.href = "/dashboard"
+      if (response.status === "success") {
+        setSuccess(true)
+        console.log("Sign up successful:", response)
+        // Optionally redirect to login or auto-login
+        setTimeout(() => {
+          window.location.href = "/"
+        }, 2000)
       } else {
-        setError(result.message || "Login failed")
+        setError(response.message || "Sign up failed")
       }
     } catch (error) {
       if (error instanceof ApiError) {
         setError(error.message)
       } else {
-        setError("An error occurred during login. Please try again.")
+        setError("An error occurred during sign up. Please try again.")
       }
-      console.error("Login error:", error)
+      console.error("Sign up error:", error)
     } finally {
       setIsLoading(false)
     }
   }
 
+  if (success) {
+    return (
+      <Card className="w-full max-w-md mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <CardHeader className="space-y-1 text-center">
+          <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <CardTitle className="text-2xl font-bold text-green-600">Welcome to ServisLah!</CardTitle>
+          <CardDescription>
+            Your account has been created successfully. Redirecting to login...
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    )
+  }
+
   return (
     <Card className="w-full max-w-md mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-8 duration-700">
       <CardHeader className="space-y-1 animate-in fade-in slide-in-from-top-4 duration-700 delay-200">
-        <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text">Welcome Back</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text">Create Account</CardTitle>
         <CardDescription className="text-center">
-          Enter your credentials to access your account
+          Join ServisLah to manage your vehicle services
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -114,7 +127,26 @@ export function LoginForm() {
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Enter your password"
+                      placeholder="Create a password"
+                      {...field}
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Confirm your password"
                       {...field}
                       disabled={isLoading}
                     />
@@ -138,17 +170,17 @@ export function LoginForm() {
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Signing in...
+                  Creating account...
                 </div>
               ) : (
-                "Sign In"
+                "Create Account"
               )}
             </Button>
 
             <div className="text-center text-sm text-gray-600">
-              Don&apos;t have an account?{" "}
-              <Link href="/signup" className="text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-300">
-                Sign up
+              Already have an account?{" "}
+              <Link href="/" className="text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-300">
+                Sign in
               </Link>
             </div>
           </form>

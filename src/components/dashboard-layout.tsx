@@ -25,6 +25,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useUser } from "@/contexts/UserContext"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -41,6 +42,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const pathname = usePathname()
+  const { user, isLoading: userLoading, logout } = useUser()
 
   // Smooth loading animation
   useEffect(() => {
@@ -49,13 +51,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }, [])
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token")
-    localStorage.removeItem("refresh_token")
-    localStorage.removeItem("user_id")
-    window.location.href = "/"
+    logout()
   }
 
-  if (isLoading) {
+  // Show loading if user data is still loading
+  if (userLoading || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
@@ -68,6 +68,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
     )
   }
+
+  // Get user display name
+  const displayName = user?.profile?.first_name && user?.profile?.last_name 
+    ? `${user.profile.first_name} ${user.profile.last_name}`
+    : user?.email?.split('@')[0] || 'User'
+  
+  const userInitials = user?.profile?.first_name && user?.profile?.last_name
+    ? `${user.profile.first_name[0]}${user.profile.last_name[0]}`
+    : displayName.slice(0, 2).toUpperCase()
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 flex">
@@ -148,12 +159,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="w-full justify-start h-auto p-3 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-300 rounded-xl group">
                   <Avatar className="h-10 w-10 mr-3 ring-2 ring-transparent group-hover:ring-blue-200 transition-all duration-300">
-                    <AvatarImage src="/placeholder-avatar.jpg" />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white">JD</AvatarFallback>
+                    <AvatarImage src={user?.profile?.profile_picture || "/placeholder-avatar.jpg"} />
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white">{userInitials}</AvatarFallback>
                   </Avatar>
                   <div className="text-left">
-                    <p className="text-sm font-medium group-hover:text-blue-600 transition-colors duration-300">John Doe</p>
-                    <p className="text-xs text-gray-500">john@example.com</p>
+                    <p className="text-sm font-medium group-hover:text-blue-600 transition-colors duration-300">{displayName}</p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
                   </div>
                 </Button>
               </DropdownMenuTrigger>
@@ -195,10 +206,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="flex items-center space-x-3 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-300 rounded-xl group">
                         <Avatar className="h-8 w-8 ring-2 ring-transparent group-hover:ring-blue-200 transition-all duration-300">
-                          <AvatarImage src="/placeholder-avatar.jpg" />
-                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white">JD</AvatarFallback>
+                          <AvatarImage src={user?.profile?.profile_picture || "/placeholder-avatar.jpg"} />
+                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white">{userInitials}</AvatarFallback>
                         </Avatar>
-                        <span className="text-sm font-medium hidden md:block group-hover:text-blue-600 transition-colors duration-300">John Doe</span>
+                        <span className="text-sm font-medium hidden md:block group-hover:text-blue-600 transition-colors duration-300">{displayName}</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 border-gray-200/50 bg-white/95 backdrop-blur-sm">

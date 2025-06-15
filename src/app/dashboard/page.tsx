@@ -5,14 +5,20 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { useUser } from "@/contexts/UserContext"
 
 export default function DashboardPage() {
+  const { user } = useUser()
+
+  // Get user first name for welcome message
+  const userName = user?.profile?.first_name || user?.email?.split('@')[0] || 'there'
+
   return (
     <div className="space-y-8">
       {/* Welcome Header with smooth animation */}
       <div className="animate-in fade-in slide-in-from-top-4 duration-700">
         <h1 className="text-4xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text">
-          Welcome back, John! 👋
+          Welcome back, {userName}! 👋
         </h1>
         <p className="text-gray-600 mt-2 text-lg">Here&apos;s what&apos;s happening with your vehicles today</p>
       </div>
