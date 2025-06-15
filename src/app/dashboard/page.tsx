@@ -14,7 +14,7 @@ export default function DashboardPage() {
         <h1 className="text-4xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text">
           Welcome back, John! 👋
         </h1>
-        <p className="text-gray-600 mt-2 text-lg">Here's what's happening with your vehicles today</p>
+        <p className="text-gray-600 mt-2 text-lg">Here&apos;s what&apos;s happening with your vehicles today</p>
       </div>
 
       {/* Quick Stats with staggered animations */}
