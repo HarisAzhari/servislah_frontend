@@ -27,10 +27,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (response.status === 'success') {
         setUser(response.data.user)
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch user data')
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch user data'
+      setError(errorMessage)
       // If unauthorized, clear tokens
-      if (err.status === 401) {
+      if (err && typeof err === 'object' && 'status' in err && err.status === 401) {
         logout()
       }
     } finally {

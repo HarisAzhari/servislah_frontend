@@ -3,38 +3,20 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
 import Link from "next/link"
+import { Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { userService } from "@/lib/services/userService"
 import { ApiError } from "@/lib/api"
-
-const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-})
-
-type LoginFormData = z.infer<typeof loginSchema>
-
-interface LoginResponse {
-  status: string
-  message: string
-  data: {
-    user_id: string
-    email: string
-    backend_tokens: {
-      access_token: string
-      refresh_token: string
-    }
-  }
-}
+import { loginSchema, type LoginFormData, type LoginResponse } from "@/lib/schemas"
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -49,7 +31,7 @@ export function LoginForm() {
     setError(null)
 
     try {
-      const result = await userService.login(data.email, data.password)
+      const result: LoginResponse = await userService.login(data.email, data.password)
       
       if (result.status === "success") {
         // Store tokens in localStorage (you might want to use a more secure method)
@@ -76,8 +58,8 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-8 duration-700">
-      <CardHeader className="space-y-1 animate-in fade-in slide-in-from-top-4 duration-700 delay-200">
+    <Card className="w-full max-w-md mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards]">
+      <CardHeader className="space-y-1 opacity-0 animate-[fadeInDown_0.6s_ease-out_0.2s_forwards]">
         <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text">Welcome Back</CardTitle>
         <CardDescription className="text-center">
           Enter your credentials to access your account
@@ -110,14 +92,35 @@ export function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Password</FormLabel>
+                    <Link 
+                      href="/forgot-password" 
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-300"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
                   <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Enter your password"
-                      {...field}
-                      disabled={isLoading}
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        {...field}
+                        disabled={isLoading}
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -132,7 +135,7 @@ export function LoginForm() {
 
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed group" 
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed" 
               disabled={isLoading}
             >
               {isLoading ? (

@@ -1,487 +1,332 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Car, MapPin, Calendar, Clock, ArrowRight, ArrowLeft, Check } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { MapPin, ArrowLeft, Wrench, Phone, Star, Navigation } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 
-// Form schema
-const appointmentSchema = z.object({
-  vehicleId: z.string().min(1, "Please select a vehicle"),
-  serviceType: z.string().min(1, "Please select a service type"),
-  serviceCenterId: z.string().min(1, "Please select a service center"),
-  date: z.date({
-    required_error: "Please select a date",
-  }),
-  timeSlot: z.string().min(1, "Please select a time slot"),
-  notes: z.string().optional(),
-})
-
-type AppointmentFormData = z.infer<typeof appointmentSchema>
-
-// Mock data
-const vehicles = [
-  { id: "1", make: "Toyota", model: "Camry", year: 2020, plateNumber: "WXY 1234" },
-  { id: "2", make: "Honda", model: "Civic", year: 2019, plateNumber: "ABC 5678" },
-  { id: "3", make: "Perodua", model: "Myvi", year: 2021, plateNumber: "DEF 9012" },
-]
-
-const serviceTypes = [
-  { id: "oil-change", name: "Oil Change & Basic Maintenance", duration: "1 hour", price: "RM 120-180" },
-  { id: "brake-service", name: "Brake Inspection & Service", duration: "2 hours", price: "RM 200-400" },
-  { id: "ac-repair", name: "Air Conditioning Service", duration: "1.5 hours", price: "RM 150-300" },
-  { id: "engine-diagnostic", name: "Engine Diagnostic", duration: "1 hour", price: "RM 80-150" },
-  { id: "tire-service", name: "Tire Replacement/Repair", duration: "1 hour", price: "RM 100-500" },
-  { id: "full-service", name: "Full Service Package", duration: "3 hours", price: "RM 400-800" },
-]
-
+// Mock service centers data
 const serviceCenters = [
-  { 
-    id: "1", 
-    name: "AutoCare Plus", 
-    location: "Kuala Lumpur", 
-    rating: 4.8, 
-    distance: "2.5 km",
-    availableSlots: ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"]
+  {
+    id: "1",
+    name: "AutoCare Premium",
+    type: "FULL SERVICE",
+    location: "Kuala Lumpur",
+    address: "123 Jalan Sultan, KL City Centre, 50000 Kuala Lumpur",
+    image: "/api/placeholder/80/80",
+    rating: 4.9,
+    distance: "2.1 km",
+    availability: [
+      { date: "Nov 20, 2024", available: true },
+      { date: "Nov 21, 2024", available: false },
+      { date: "Nov 22, 2024", available: true }
+    ],
+    coordinates: { lat: 3.1390, lng: 101.6869 },
+    phone: "+60 3-2123 4567",
+    services: ["Oil Change", "Brake Service", "AC Repair", "Engine Diagnostic"]
   },
-  { 
-    id: "2", 
-    name: "SpeedFix Workshop", 
-    location: "Petaling Jaya", 
-    rating: 4.6, 
+  {
+    id: "2",
+    name: "SpeedFix Workshop",
+    type: "EXPRESS SERVICE",
+    location: "Petaling Jaya",
+    address: "45 Jalan SS2/24, Damansara Heights, 47300 Petaling Jaya",
+    image: "/api/placeholder/80/80",
+    rating: 4.7,
     distance: "5.2 km",
-    availableSlots: ["08:00", "09:30", "11:00", "13:30", "15:00", "16:30"]
+    availability: [
+      { date: "Nov 20, 2024", available: true },
+      { date: "Nov 21, 2024", available: true },
+      { date: "Nov 22, 2024", available: false }
+    ],
+    coordinates: { lat: 3.1073, lng: 101.6505 },
+    phone: "+60 3-7956 2345",
+    services: ["Quick Oil Change", "Tire Service", "Battery Check"]
   },
-  { 
-    id: "3", 
-    name: "CoolCar Services", 
-    location: "Shah Alam", 
-    rating: 4.9, 
-    distance: "8.1 km",
-    availableSlots: ["09:00", "10:30", "12:00", "14:30", "16:00", "17:00"]
+  {
+    id: "3",
+    name: "CoolCar Services",
+    type: "AC SPECIALIST",
+    location: "Shah Alam",
+    address: "78 Jalan Tengku Ampuan Zabedah C9/C, 40100 Shah Alam",
+    image: "/api/placeholder/80/80",
+    rating: 4.8,
+    distance: "8.5 km",
+    availability: [
+      { date: "Nov 20, 2024", available: false },
+      { date: "Nov 21, 2024", available: true },
+      { date: "Nov 22, 2024", available: true }
+    ],
+    coordinates: { lat: 3.0733, lng: 101.5185 },
+    phone: "+60 3-5511 8899",
+    services: ["AC Repair", "Cooling System", "Radiator Service"]
   },
-]
-
-const STEPS = [
-  { id: 1, title: "Vehicle & Service", description: "Select your vehicle and service type" },
-  { id: 2, title: "Service Center", description: "Choose your preferred service center" },
-  { id: 3, title: "Date & Time", description: "Pick your appointment date and time" },
-  { id: 4, title: "Confirmation", description: "Review and confirm your booking" },
+  {
+    id: "4",
+    name: "ProMech Auto Center",
+    type: "ENGINE SPECIALIST",
+    location: "Subang Jaya",
+    address: "32 Jalan SS15/4D, SS15, 47500 Subang Jaya",
+    image: "/api/placeholder/80/80",
+    rating: 4.6,
+    distance: "12.3 km",
+    availability: [
+      { date: "Nov 20, 2024", available: true },
+      { date: "Nov 21, 2024", available: true },
+      { date: "Nov 22, 2024", available: true }
+    ],
+    coordinates: { lat: 3.0738, lng: 101.5906 },
+    phone: "+60 3-5633 1122",
+    services: ["Engine Overhaul", "Transmission", "Suspension"]
+  }
 ]
 
 export default function CreateAppointmentPage() {
-  const [currentStep, setCurrentStep] = useState(1)
-  const [selectedDate, setSelectedDate] = useState<Date>()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedFilter, setSelectedFilter] = useState("Anything")
 
-  const form = useForm<AppointmentFormData>({
-    resolver: zodResolver(appointmentSchema),
-    defaultValues: {
-      vehicleId: "",
-      serviceType: "",
-      serviceCenterId: "",
-      timeSlot: "",
-      notes: "",
-    },
-  })
+  const filteredCenters = serviceCenters.filter(center => 
+    searchQuery === "" || 
+    center.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    center.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    center.type.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
-  const selectedVehicle = vehicles.find(v => v.id === form.watch("vehicleId"))
-  const selectedService = serviceTypes.find(s => s.id === form.watch("serviceType"))
-  const selectedCenter = serviceCenters.find(c => c.id === form.watch("serviceCenterId"))
-
-  const nextStep = () => {
-    if (currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1)
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case "FULL SERVICE": return "bg-blue-100 text-blue-800"
+      case "EXPRESS SERVICE": return "bg-green-100 text-green-800"
+      case "AC SPECIALIST": return "bg-cyan-100 text-cyan-800"
+      case "ENGINE SPECIALIST": return "bg-purple-100 text-purple-800"
+      default: return "bg-gray-100 text-gray-800"
     }
   }
 
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-    }
-  }
-
-  const onSubmit = async (data: AppointmentFormData) => {
-    setIsSubmitting(true)
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      console.log("Appointment booked:", data)
-      alert("Appointment booked successfully!")
-      // Redirect to appointments page
-    } catch (error) {
-      console.error("Error booking appointment:", error)
-      alert("Failed to book appointment. Please try again.")
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const canProceedToNext = () => {
-    switch (currentStep) {
-      case 1:
-        return form.watch("vehicleId") && form.watch("serviceType")
-      case 2:
-        return form.watch("serviceCenterId")
-      case 3:
-        return selectedDate && form.watch("timeSlot")
-      default:
-        return true
-    }
+  const handleSelectCenter = (centerId: string) => {
+    // Navigate to appointment booking with selected center
+    router.push(`/dashboard/appointments/book?centerId=${centerId}`)
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Book Appointment</h1>
-        <p className="text-gray-600 mt-1">Schedule your car service appointment</p>
+      <div className="flex items-center gap-4 mb-8">
+        <button 
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeft size={20} />
+          <span>Back</span>
+        </button>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Service Centers</h1>
+          <p className="text-gray-600">Find and book your preferred service center</p>
+        </div>
       </div>
 
-      {/* Progress Steps */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            {STEPS.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div className={`
-                  flex items-center justify-center w-10 h-10 rounded-full border-2
-                  ${currentStep >= step.id 
-                    ? 'bg-blue-600 border-blue-600 text-white' 
-                    : 'border-gray-300 text-gray-500'
-                  }
-                `}>
-                  {currentStep > step.id ? (
-                    <Check className="h-5 w-5" />
-                  ) : (
-                    <span className="text-sm font-medium">{step.id}</span>
-                  )}
+      {/* Search and Filter */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="flex-1 relative">
+          <Input
+            placeholder="Search service centers..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 h-12"
+          />
+          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Filter:</span>
+          <select 
+            value={selectedFilter}
+            onChange={(e) => setSelectedFilter(e.target.value)}
+            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="Anything">Anything</option>
+            <option value="FULL SERVICE">Full Service</option>
+            <option value="EXPRESS SERVICE">Express Service</option>
+            <option value="AC SPECIALIST">AC Specialist</option>
+            <option value="ENGINE SPECIALIST">Engine Specialist</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Map Section */}
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          <div className="relative h-96 bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
+            {/* Map Placeholder - you can integrate with Google Maps or Mapbox here */}
+            <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+              <div className="text-center space-y-4">
+                <div className="relative w-full h-full bg-gradient-to-br from-blue-100 via-green-50 to-blue-50">
+                  {/* Simulated map with service center markers */}
+                  <div className="absolute inset-0 opacity-60">
+                    <svg width="100%" height="100%" viewBox="0 0 800 400" className="w-full h-full">
+                      {/* Map background */}
+                      <rect width="800" height="400" fill="#f0f9ff"/>
+                      
+                      {/* Roads */}
+                      <path d="M0 200 L800 200" stroke="#e5e7eb" strokeWidth="8"/>
+                      <path d="M200 0 L200 400" stroke="#e5e7eb" strokeWidth="6"/>
+                      <path d="M600 0 L600 400" stroke="#e5e7eb" strokeWidth="6"/>
+                      <path d="M0 100 L800 100" stroke="#f3f4f6" strokeWidth="4"/>
+                      <path d="M0 300 L800 300" stroke="#f3f4f6" strokeWidth="4"/>
+                      
+                      {/* Service center markers */}
+                      {serviceCenters.map((center, index) => (
+                        <g key={center.id}>
+                          <circle 
+                            cx={150 + index * 150} 
+                            cy={120 + (index % 2) * 160} 
+                            r="12" 
+                            fill="#3b82f6" 
+                            className="animate-pulse"
+                          />
+                          <circle 
+                            cx={150 + index * 150} 
+                            cy={120 + (index % 2) * 160} 
+                            r="8" 
+                            fill="white"
+                          />
+                          <text 
+                            x={150 + index * 150} 
+                            y={140 + (index % 2) * 160} 
+                            textAnchor="middle" 
+                            className="text-xs font-semibold" 
+                            fill="#1f2937"
+                          >
+                            {center.name.split(' ')[0]}
+                          </text>
+                        </g>
+                      ))}
+                    </svg>
+                  </div>
+                  
+                  {/* Map overlay info */}
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Navigation size={16} className="text-blue-600" />
+                      <span className="font-medium text-gray-900">Kuala Lumpur Area</span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">{filteredCenters.length} service centers nearby</p>
+                  </div>
+                  
+                  {/* Zoom controls */}
+                  <div className="absolute top-4 right-4 flex flex-col bg-white rounded-lg shadow-lg overflow-hidden">
+                    <button className="p-2 hover:bg-gray-50 border-b border-gray-100">
+                      <span className="text-lg font-bold text-gray-600">+</span>
+                    </button>
+                    <button className="p-2 hover:bg-gray-50">
+                      <span className="text-lg font-bold text-gray-600">−</span>
+                    </button>
+                  </div>
                 </div>
-                <div className="ml-3 min-w-0 flex-1">
-                  <p className={`text-sm font-medium ${
-                    currentStep >= step.id ? 'text-blue-600' : 'text-gray-500'
-                  }`}>
-                    {step.title}
-                  </p>
-                  <p className="text-xs text-gray-500 hidden sm:block">{step.description}</p>
-                </div>
-                {index < STEPS.length - 1 && (
-                  <ArrowRight className="h-5 w-5 text-gray-400 mx-4" />
-                )}
               </div>
-            ))}
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          {/* Step 1: Vehicle & Service */}
-          {currentStep === 1 && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Select Vehicle</CardTitle>
-                  <CardDescription>Choose which vehicle needs service</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="vehicleId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {vehicles.map((vehicle) => (
-                            <div
-                              key={vehicle.id}
-                              className={`
-                                p-4 border-2 rounded-lg cursor-pointer transition-colors
-                                ${field.value === vehicle.id 
-                                  ? 'border-blue-500 bg-blue-50' 
-                                  : 'border-gray-200 hover:border-gray-300'
-                                }
-                              `}
-                              onClick={() => field.onChange(vehicle.id)}
-                            >
-                              <div className="flex items-center space-x-3">
-                                <Avatar className="h-10 w-10">
-                                  <AvatarFallback className="bg-blue-100 text-blue-700">
-                                    {vehicle.make[0]}{vehicle.model[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                  <p className="font-medium">{vehicle.make} {vehicle.model}</p>
-                                  <p className="text-sm text-gray-500">{vehicle.year} • {vehicle.plateNumber}</p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
+      {/* Service Centers List */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-gray-900">Select Service Center</h2>
+        
+        <div className="grid gap-4">
+          {filteredCenters.map((center) => (
+            <Card key={center.id} className="hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-gray-300">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-6">
+                  {/* Service Center Image */}
+                  <div className="flex-shrink-0">
+                    <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-xl flex items-center justify-center">
+                      <Wrench size={32} className="text-blue-600" />
+                    </div>
+                  </div>
+                  
+                  {/* Service Center Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <h3 className="text-xl font-bold text-gray-900">{center.name}</h3>
+                          <Badge className={`text-xs font-semibold px-2 py-1 ${getTypeColor(center.type)}`}>
+                            {center.type}
+                          </Badge>
                         </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Select Service Type</CardTitle>
-                  <CardDescription>What service does your car need?</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="serviceType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {serviceTypes.map((service) => (
-                            <div
-                              key={service.id}
-                              className={`
-                                p-4 border-2 rounded-lg cursor-pointer transition-colors
-                                ${field.value === service.id 
-                                  ? 'border-blue-500 bg-blue-50' 
-                                  : 'border-gray-200 hover:border-gray-300'
-                                }
-                              `}
-                              onClick={() => field.onChange(service.id)}
-                            >
-                              <h3 className="font-medium mb-1">{service.name}</h3>
-                              <div className="flex justify-between text-sm text-gray-500">
-                                <span>{service.duration}</span>
-                                <span className="font-medium text-green-600">{service.price}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Step 2: Service Center */}
-          {currentStep === 2 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Choose Service Center</CardTitle>
-                <CardDescription>Select your preferred service center</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <FormField
-                  control={form.control}
-                  name="serviceCenterId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="space-y-4">
-                        {serviceCenters.map((center) => (
-                          <div
-                            key={center.id}
-                            className={`
-                              p-4 border-2 rounded-lg cursor-pointer transition-colors
-                              ${field.value === center.id 
-                                ? 'border-blue-500 bg-blue-50' 
-                                : 'border-gray-200 hover:border-gray-300'
-                              }
-                            `}
-                            onClick={() => field.onChange(center.id)}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-lg">{center.name}</h3>
-                                <div className="flex items-center mt-1 text-sm text-gray-600">
-                                  <MapPin className="h-4 w-4 mr-1" />
-                                  {center.location} • {center.distance}
-                                </div>
-                                <div className="flex items-center mt-1">
-                                  <div className="flex items-center">
-                                    <span className="text-sm font-medium">★ {center.rating}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <Badge variant="outline" className="ml-4">Available</Badge>
-                            </div>
+                        <p className="text-gray-600 mb-1">{center.location}</p>
+                        <p className="text-sm text-gray-500 mb-2">{center.address}</p>
+                        
+                        {/* Rating and Distance */}
+                        <div className="flex items-center gap-4 text-sm">
+                          <div className="flex items-center gap-1">
+                            <Star size={14} className="text-yellow-400 fill-current" />
+                            <span className="font-medium text-gray-900">{center.rating}</span>
                           </div>
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Step 3: Date & Time */}
-          {currentStep === 3 && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Select Date</CardTitle>
-                  <CardDescription>Choose your preferred appointment date</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <CalendarComponent
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => {
-                      setSelectedDate(date)
-                      form.setValue("date", date as Date)
-                    }}
-                    disabled={(date) => date < new Date() || date.getDay() === 0}
-                    className="rounded-md border"
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Select Time</CardTitle>
-                  <CardDescription>Available time slots for {selectedCenter?.name}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="timeSlot"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="grid grid-cols-2 gap-3">
-                          {selectedCenter?.availableSlots.map((slot) => (
-                            <Button
-                              key={slot}
-                              type="button"
-                              variant={field.value === slot ? "default" : "outline"}
-                              className="justify-center"
-                              onClick={() => field.onChange(slot)}
-                            >
-                              <Clock className="h-4 w-4 mr-2" />
-                              {slot}
-                            </Button>
-                          ))}
+                          <div className="flex items-center gap-1">
+                            <MapPin size={14} className="text-gray-400" />
+                            <span className="text-gray-600">{center.distance}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Phone size={14} className="text-gray-400" />
+                            <span className="text-gray-600">{center.phone}</span>
+                          </div>
                         </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Step 4: Confirmation */}
-          {currentStep === 4 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Confirm Your Appointment</CardTitle>
-                <CardDescription>Please review your booking details</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="font-medium mb-3">Vehicle Details</h3>
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="font-medium">{selectedVehicle?.make} {selectedVehicle?.model}</p>
-                      <p className="text-sm text-gray-600">{selectedVehicle?.year} • {selectedVehicle?.plateNumber}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Services */}
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-1">
+                        {center.services.slice(0, 3).map((service, index) => (
+                          <span key={index} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                            {service}
+                          </span>
+                        ))}
+                        {center.services.length > 3 && (
+                          <span className="text-xs text-gray-500">+{center.services.length - 3} more</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-
-                  <div>
-                    <h3 className="font-medium mb-3">Service Details</h3>
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="font-medium">{selectedService?.name}</p>
-                      <p className="text-sm text-gray-600">{selectedService?.duration} • {selectedService?.price}</p>
+                  
+                  {/* Availability and Action */}
+                  <div className="flex-shrink-0 text-right">
+                    <div className="space-y-2 mb-4">
+                      {center.availability.map((slot, index) => (
+                        <div key={index} className="flex items-center justify-end gap-2 text-sm">
+                          <div className={`w-2 h-2 rounded-full ${slot.available ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          <span className="text-gray-600">{slot.date}</span>
+                        </div>
+                      ))}
                     </div>
+                    
+                    <Button 
+                      onClick={() => handleSelectCenter(center.id)}
+                      className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                    >
+                      Select Office
+                    </Button>
                   </div>
-
-                  <div>
-                    <h3 className="font-medium mb-3">Service Center</h3>
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="font-medium">{selectedCenter?.name}</p>
-                      <p className="text-sm text-gray-600">{selectedCenter?.location} • {selectedCenter?.distance}</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="font-medium mb-3">Date & Time</h3>
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="font-medium">{selectedDate?.toLocaleDateString()}</p>
-                      <p className="text-sm text-gray-600">{form.watch("timeSlot")}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="notes">Additional Notes (Optional)</Label>
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Any special requests or notes..."
-                            className="mt-2"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
                 </div>
               </CardContent>
             </Card>
-          )}
+          ))}
+        </div>
+      </div>
 
-          {/* Navigation Buttons */}
-          <div className="flex justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={prevStep}
-              disabled={currentStep === 1}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Previous
-            </Button>
-
-            {currentStep < STEPS.length ? (
-              <Button
-                type="button"
-                onClick={nextStep}
-                disabled={!canProceedToNext()}
-              >
-                Next
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            ) : (
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Booking..." : "Confirm Booking"}
-              </Button>
-            )}
-          </div>
-        </form>
-      </Form>
+      {/* Footer Actions */}
+      <div className="flex justify-between items-center pt-6 border-t border-gray-200">
+        <Button variant="outline" onClick={() => router.back()}>
+          Cancel
+        </Button>
+        <div className="text-sm text-gray-500">
+                     Can&apos;t find what you&apos;re looking for? <button className="text-blue-600 hover:text-blue-700 font-medium">Contact support</button>
+        </div>
+      </div>
     </div>
   )
 } 

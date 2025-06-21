@@ -1,3 +1,5 @@
+import { httpClient } from './httpClient'
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://servislahserver-production.up.railway.app/api/v1';
 
 export class ApiError extends Error {
@@ -20,30 +22,29 @@ export const apiRequest = async <T>(
   options: RequestInit = {}
 ): Promise<T> => {
   const url = `${API_BASE_URL}${endpoint}`;
+  const method = options.method || 'GET';
   
-  const config: RequestInit = {
-    ...options,
-    headers: {
-      ...getAuthHeaders(),
-      ...options.headers,
-    },
-  };
-
   try {
-    const response = await fetch(url, config);
+    let response: Response;
     
-    // Handle redirects explicitly
-    if (response.status === 307 || response.status === 308) {
-      const redirectUrl = response.headers.get('Location');
-      if (redirectUrl) {
-        console.log(`Redirecting from ${url} to ${redirectUrl}`);
-        const newResponse = await fetch(redirectUrl, config);
-        if (!newResponse.ok) {
-          const errorData = await newResponse.json().catch(() => ({ message: 'Unknown error' }));
-          throw new ApiError(newResponse.status, errorData.message || `HTTP ${newResponse.status}`);
-        }
-        return await newResponse.json();
-      }
+    if (method === 'GET') {
+      // Use the httpClient for GET requests
+      response = await httpClient.get(url, {
+        headers: options.headers as Record<string, string> || {},
+      });
+    } else {
+      // Use fetch directly for POST, PUT, PATCH, DELETE requests
+      const headers = {
+        ...getAuthHeaders(),
+        ...(options.headers || {}),
+      };
+      
+      response = await fetch(url, {
+        method,
+        headers,
+        body: options.body,
+        ...options,
+      });
     }
     
     if (!response.ok) {

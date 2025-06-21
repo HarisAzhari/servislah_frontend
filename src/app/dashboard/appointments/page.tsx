@@ -113,19 +113,19 @@ export default function AppointmentsPage() {
   return (
     <div className="space-y-6">
       {/* Header with smooth animation */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
-        <div className="animate-in fade-in slide-in-from-left-4 duration-700 delay-200">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 opacity-0 animate-[fadeInUp_0.8s_ease-out_forwards]">
+        <div className="opacity-0 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]">
           <h1 className="text-3xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text">My Appointments</h1>
           <p className="text-gray-600 mt-1">Manage your car service appointments</p>
         </div>
-        <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 animate-in fade-in slide-in-from-right-4 duration-700 delay-300 group">
+        <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.3s_forwards] group">
           <Calendar className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
           Book New Appointment
         </Button>
       </div>
 
       {/* Search and Filter */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards]">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
@@ -153,7 +153,7 @@ export default function AppointmentsPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="opacity-0 animate-[fadeInUp_0.8s_ease-out_0.5s_forwards]">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="all">All ({appointments.length})</TabsTrigger>
           <TabsTrigger value="confirmed">Confirmed ({appointments.filter(a => a.status === "confirmed").length})</TabsTrigger>
@@ -184,8 +184,8 @@ export default function AppointmentsPage() {
               {filteredAppointments.map((appointment, index) => (
                 <Card 
                   key={appointment.id} 
-                  className="hover:shadow-xl hover:scale-[1.01] transition-all duration-300 border-l-4 border-l-transparent hover:border-l-blue-500 animate-in fade-in slide-in-from-bottom-4 duration-700 group"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  className="hover:shadow-xl hover:scale-[1.01] transition-all duration-300 border-l-4 border-l-transparent hover:border-l-blue-500 opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards] group"
+                  style={{ animationDelay: `${0.6 + (index * 0.1)}s` }}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">

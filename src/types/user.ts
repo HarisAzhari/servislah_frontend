@@ -3,11 +3,11 @@ export interface User {
   email: string;
   password: string;
   phone: string;
-  role: "USER" | "ADMIN";
+  role: "USER" | "ADMIN" | "MECHANIC";
   status: "ACTIVE" | "INACTIVE";
   platform: "CREDENTIAL" | "GOOGLE" | "FACEBOOK";
-  profile: UserProfile;
-  subscription: UserSubscription;
+  profile: UserProfile | null;
+  subscription: UserSubscription | null;
   tokens: any;
   permissions: any;
   vehicles: any;
@@ -47,6 +47,7 @@ export interface CreateUserRequest {
 }
 
 export interface UpdateUserRequest {
+  phone?: string;
   profile: {
     first_name: string;
     last_name: string;

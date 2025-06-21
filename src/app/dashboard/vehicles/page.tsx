@@ -1,275 +1,297 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Car, Plus, Edit, Trash2, Calendar, Fuel, Gauge, Settings } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import React, { useState } from 'react';
+import { Calendar, Clock, MapPin, AlertTriangle, Car, Settings, Phone, ChevronRight, Gauge, Wrench } from 'lucide-react';
+import { AddVehicleDialog } from '@/components/add-vehicle-dialog';
+import { useRouter } from 'next/navigation';
 
-// Mock data for vehicles
-const vehicles = [
-  {
-    id: "1",
-    make: "Toyota",
-    model: "Camry",
-    year: 2020,
-    color: "Silver",
-    plateNumber: "WXY 1234",
-    mileage: "45,000 km",
-    fuelType: "Petrol",
-    transmission: "Automatic",
-    lastService: "2024-01-10",
-    nextService: "2024-04-10",
-    status: "active",
-    image: "/car-placeholder.jpg"
-  },
-  {
-    id: "2", 
-    make: "Honda",
-    model: "Civic",
-    year: 2019,
-    color: "Black",
-    plateNumber: "ABC 5678",
-    mileage: "38,200 km",
-    fuelType: "Petrol",
-    transmission: "Manual",
-    lastService: "2024-01-05",
-    nextService: "2024-04-05",
-    status: "active",
-    image: "/car-placeholder.jpg"
-  },
-  {
-    id: "3",
-    make: "Perodua",
-    model: "Myvi",
-    year: 2021,
-    color: "White",
-    plateNumber: "DEF 9012",
-    mileage: "22,500 km",
-    fuelType: "Petrol",
-    transmission: "Automatic",
-    lastService: "2023-12-20",
-    nextService: "2024-03-20",
-    status: "maintenance",
-    image: "/car-placeholder.jpg"
-  }
-]
+const MyVehicles = () => {
+  const router = useRouter();
+  const [vehicles] = useState([
+    {
+      id: 1,
+      make: 'Tesla',
+      model: 'Model S',
+      year: 2023,
+      color: 'Pearl White',
+      license: 'TESLA-01',
+      mileage: 15420,
+      nextAppointment: {
+        date: '2025-07-15',
+        time: '10:00 AM',
+        service: 'Premium Service Package',
+        location: 'Tesla Service Center - Downtown',
+        estimatedDuration: '2-3 hours'
+      },
+      lastService: '2025-04-12',
+      status: 'scheduled',
+      health: 98,
+      batteryLevel: 85
+    },
+    {
+      id: 2,
+      make: 'BMW',
+      model: 'X5 M Competition',
+      year: 2022,
+      color: 'Carbon Black',
+      license: 'BMW-X5M',
+      mileage: 28750,
+      nextAppointment: {
+        date: '2025-08-03',
+        time: '2:30 PM',
+        service: 'Performance Brake Service',
+        location: 'BMW Performance Center',
+        estimatedDuration: '3-4 hours'
+      },
+      lastService: '2025-05-20',
+      status: 'scheduled',
+      health: 94
+    },
+    {
+      id: 3,
+      make: 'Porsche',
+      model: '911 Turbo S',
+      year: 2024,
+      color: 'Guards Red',
+      license: 'POR-911',
+      mileage: 8920,
+      nextAppointment: null,
+      lastService: '2025-03-08',
+      status: 'needs_scheduling',
+      health: 89
+    }
+  ]);
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "active":
-      return "bg-green-100 text-green-800 hover:bg-green-200"
-    case "maintenance":
-      return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-    case "inactive":
-      return "bg-gray-100 text-gray-800 hover:bg-gray-200"
-    default:
-      return "bg-gray-100 text-gray-800 hover:bg-gray-200"
-  }
-}
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short',
+      month: 'short', 
+      day: 'numeric'
+    });
+  };
 
-const getCarInitials = (make: string, model: string) => {
-  return `${make.charAt(0)}${model.charAt(0)}`.toUpperCase()
-}
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case 'scheduled': 
+        return { 
+          bg: 'bg-gradient-to-r from-emerald-50 to-teal-50', 
+          text: 'text-emerald-700', 
+          border: 'border-emerald-200',
+          dot: 'bg-emerald-400'
+        };
+      case 'needs_scheduling': 
+        return { 
+          bg: 'bg-gradient-to-r from-amber-50 to-orange-50', 
+          text: 'text-amber-700', 
+          border: 'border-amber-200',
+          dot: 'bg-amber-400'
+        };
+      default: 
+        return { 
+          bg: 'bg-gradient-to-r from-gray-50 to-slate-50', 
+          text: 'text-gray-700', 
+          border: 'border-gray-200',
+          dot: 'bg-gray-400'
+        };
+    }
+  };
 
-const isServiceDue = (nextServiceDate: string) => {
-  const nextService = new Date(nextServiceDate)
-  const today = new Date()
-  const diffTime = nextService.getTime() - today.getTime()
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  return diffDays <= 30
-}
-
-export default function VehiclesPage() {
-  const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null)
+  const getHealthColor = (health: number) => {
+    if (health >= 95) return 'text-emerald-600';
+    if (health >= 85) return 'text-blue-600';
+    if (health >= 75) return 'text-amber-600';
+    return 'text-red-600';
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Vehicles</h1>
-          <p className="text-gray-600 mt-1">Manage your vehicle information and service history</p>
-        </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Vehicle
-        </Button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-40">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-indigo-100/30"></div>
       </div>
+      
+      <div className="relative z-10 p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex justify-between items-start mb-12 opacity-0 animate-[fadeInUp_0.8s_ease-out_forwards]">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
+                My Fleet
+              </h1>
+              <p className="text-slate-600 text-lg">Premium vehicle management and service scheduling</p>
+            </div>
+            <AddVehicleDialog />
+          </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Vehicles</p>
-                <p className="text-3xl font-bold text-gray-900">{vehicles.length}</p>
-              </div>
-              <Car className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Active Vehicles</p>
-                <p className="text-3xl font-bold text-green-600">{vehicles.filter(v => v.status === "active").length}</p>
-              </div>
-              <Gauge className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Service Due Soon</p>
-                <p className="text-3xl font-bold text-orange-600">
-                  {vehicles.filter(v => isServiceDue(v.nextService)).length}
-                </p>
-              </div>
-              <Settings className="h-8 w-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Vehicles Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {vehicles.map((vehicle) => (
-          <Card key={vehicle.id} className="hover:shadow-lg transition-shadow cursor-pointer group">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold">
-                      {getCarInitials(vehicle.make, vehicle.model)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <CardTitle className="text-lg">{vehicle.make} {vehicle.model}</CardTitle>
-                    <CardDescription>{vehicle.year} • {vehicle.plateNumber}</CardDescription>
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]">
+            {[
+              { label: 'Total Vehicles', value: '3', icon: Car, gradient: 'from-blue-500 to-cyan-500' },
+              { label: 'Scheduled Services', value: '2', icon: Calendar, gradient: 'from-emerald-500 to-teal-500' },
+              { label: 'Avg Health Score', value: '94%', icon: Gauge, gradient: 'from-violet-500 to-purple-500' },
+              { label: 'Next Service', value: '24 days', icon: Clock, gradient: 'from-orange-500 to-red-500' }
+            ].map((stat, index) => (
+              <div key={index} className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg shadow-slate-200/50">
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.gradient} shadow-lg`}>
+                    <stat.icon className="text-white" size={24} />
                   </div>
                 </div>
-                <Badge className={getStatusColor(vehicle.status)}>
-                  {vehicle.status.charAt(0).toUpperCase() + vehicle.status.slice(1)}
-                </Badge>
+                <div className="text-3xl font-bold text-slate-800 mb-1">{stat.value}</div>
+                <div className="text-slate-600 text-sm font-medium">{stat.label}</div>
               </div>
-            </CardHeader>
-            
-            <CardContent>
-              <div className="space-y-4">
-                {/* Vehicle Details */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-500">Color</p>
-                    <p className="font-medium">{vehicle.color}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Mileage</p>
-                    <p className="font-medium">{vehicle.mileage}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Fuel Type</p>
-                    <p className="font-medium flex items-center">
-                      <Fuel className="h-3 w-3 mr-1" />
-                      {vehicle.fuelType}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Transmission</p>
-                    <p className="font-medium">{vehicle.transmission}</p>
-                  </div>
-                </div>
+            ))}
+          </div>
 
-                {/* Service Information */}
-                <div className="pt-4 border-t border-gray-100">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">Service Schedule</span>
-                    {isServiceDue(vehicle.nextService) && (
-                      <Badge variant="destructive" className="text-xs">
-                        Due Soon
-                      </Badge>
+          {/* Vehicles Grid */}
+          <div className="grid gap-8 lg:grid-cols-1 xl:grid-cols-2 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards]">
+            {vehicles.map((vehicle) => {
+              const statusConfig = getStatusConfig(vehicle.status);
+              
+              return (
+                <div key={vehicle.id} className="group bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-1 opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards]" style={{ animationDelay: `${0.6 + (vehicle.id * 0.1)}s` }}>
+                  {/* Vehicle Header with Gradient */}
+                  <div className="bg-gradient-to-r from-slate-800 via-blue-800 to-indigo-800 p-8 text-white relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+                    
+                    <div className="relative z-10 flex justify-between items-start mb-6">
+                      <div className="flex items-center gap-4">
+                        <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
+                          <Car className="text-white" size={28} />
+                        </div>
+                        <div>
+                          <h3 className="text-2xl font-bold mb-1">
+                            {vehicle.year} {vehicle.make} {vehicle.model}
+                          </h3>
+                          <p className="text-blue-100">{vehicle.color} • {vehicle.license}</p>
+                        </div>
+                      </div>
+                      
+                      <div className={`px-4 py-2 rounded-full text-sm font-semibold ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} border backdrop-blur-sm`}>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${statusConfig.dot}`}></div>
+                          {vehicle.status === 'scheduled' ? 'Scheduled' : 'Needs Service'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Vehicle Stats */}
+                    <div className="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-6">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-white">{vehicle.mileage.toLocaleString()}</div>
+                        <div className="text-blue-200 text-sm">Miles</div>
+                      </div>
+                      <div className="text-center">
+                        <div className={`text-2xl font-bold ${getHealthColor(vehicle.health)}`}>{vehicle.health}%</div>
+                        <div className="text-blue-200 text-sm">Health Score</div>
+                      </div>
+                      {vehicle.batteryLevel && (
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-emerald-400">{vehicle.batteryLevel}%</div>
+                          <div className="text-blue-200 text-sm">Battery</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Appointment Section */}
+                  <div className="p-8">
+                    {vehicle.nextAppointment ? (
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-3 text-slate-800">
+                          <Calendar size={20} className="text-blue-600" />
+                          <span className="font-semibold text-lg">Upcoming Service</span>
+                        </div>
+                        
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+                          <div className="grid gap-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <Clock size={18} className="text-blue-600" />
+                                <div>
+                                  <div className="font-bold text-slate-800">{formatDate(vehicle.nextAppointment.date)}</div>
+                                  <div className="text-slate-600 text-sm">{vehicle.nextAppointment.time} • {vehicle.nextAppointment.estimatedDuration}</div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-white/60 rounded-xl p-4">
+                              <div className="font-semibold text-slate-800 mb-2">{vehicle.nextAppointment.service}</div>
+                              <div className="flex items-center gap-2 text-slate-600">
+                                <MapPin size={16} />
+                                <span className="text-sm">{vehicle.nextAppointment.location}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Premium Action Buttons */}
+                        <div className="flex gap-4">
+                          <button className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30">
+                            View Details
+                          </button>
+                          <button 
+                            onClick={() => {
+                              const params = new URLSearchParams({
+                                currentDate: vehicle.nextAppointment.date,
+                                currentTime: vehicle.nextAppointment.time,
+                                serviceName: vehicle.nextAppointment.service,
+                                location: vehicle.nextAppointment.location,
+                                vehicleName: `${vehicle.year} ${vehicle.make} ${vehicle.model}`
+                              });
+                              router.push(`/dashboard/appointments/reschedule?${params.toString()}`);
+                            }}
+                            className="flex-1 bg-white hover:bg-slate-50 text-slate-700 py-3 px-6 rounded-xl font-semibold transition-all duration-300 border border-slate-200 hover:border-slate-300"
+                          >
+                            Reschedule
+                          </button>
+                          <button className="bg-white hover:bg-slate-50 text-slate-700 p-3 rounded-xl transition-all duration-300 border border-slate-200 hover:border-slate-300">
+                            <Phone size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="flex items-center gap-3 text-amber-600">
+                          <AlertTriangle size={20} />
+                          <span className="font-semibold text-lg">Service Required</span>
+                        </div>
+                        
+                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100 text-center">
+                          <div className="mb-4">
+                            <Wrench size={32} className="text-amber-500 mx-auto mb-3" />
+                            <p className="text-slate-700 font-medium">Your vehicle is due for scheduled maintenance</p>
+                            <p className="text-slate-600 text-sm mt-2">Last service: {formatDate(vehicle.lastService)}</p>
+                          </div>
+                          <button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3 px-8 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/30">
+                            Schedule Service
+                          </button>
+                        </div>
+                      </div>
                     )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-xs text-gray-600">
-                    <div>
-                      <p>Last Service</p>
-                      <p className="font-medium text-gray-900">
-                        {new Date(vehicle.lastService).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p>Next Service</p>
-                      <p className={`font-medium ${isServiceDue(vehicle.nextService) ? 'text-red-600' : 'text-gray-900'}`}>
-                        {new Date(vehicle.nextService).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Action Buttons */}
-                <div className="flex space-x-2 pt-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      // Handle book service
-                    }}
-                  >
-                    <Calendar className="h-3 w-3 mr-1" />
-                    Book Service
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      // Handle edit
-                    }}
-                  >
-                    <Edit className="h-3 w-3" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      // Handle delete
-                    }}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                    {/* Quick Actions */}
+                    <div className="flex gap-3 pt-6 border-t border-slate-100">
+                      <button className="flex items-center gap-2 text-slate-600 hover:text-slate-800 px-4 py-2 rounded-xl hover:bg-slate-50 transition-all duration-300 group">
+                        <Settings size={16} className="group-hover:rotate-90 transition-transform duration-300" />
+                        <span className="font-medium">Manage</span>
+                      </button>
+                      <button className="flex items-center gap-2 text-slate-600 hover:text-slate-800 px-4 py-2 rounded-xl hover:bg-slate-50 transition-all duration-300">
+                        <span className="font-medium">Service History</span>
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              );
+            })}
+          </div>
+        </div>
       </div>
-
-      {/* Empty State */}
-      {vehicles.length === 0 && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Car className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No vehicles found</h3>
-            <p className="text-gray-600 text-center mb-4">
-              Add your first vehicle to get started with managing your car services.
-            </p>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Your First Vehicle
-            </Button>
-          </CardContent>
-        </Card>
-      )}
     </div>
-  )
-} 
+  );
+};
+
+export default MyVehicles;
