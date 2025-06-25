@@ -12,7 +12,8 @@ import {
   Menu, 
   X,
   LogOut,
-  Bell
+  Bell,
+  Settings
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -36,6 +37,7 @@ const navigation = [
   { name: "Vehicles", href: "/dashboard/vehicles", icon: Car },
   { name: "Service Centers", href: "/dashboard/service-centers", icon: MapPin },
   { name: "Profile", href: "/dashboard/profile", icon: User },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {

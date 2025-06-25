@@ -1,18 +1,19 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, AlertTriangle, Car, Settings, Phone, ChevronRight, Gauge, Wrench } from 'lucide-react';
-import { AddVehicleDialog } from '@/components/add-vehicle-dialog';
-import { useRouter } from 'next/navigation';
+import { Heart, Info, Phone, Search } from 'lucide-react';
 
 const MyVehicles = () => {
-  const router = useRouter();
   const [vehicles] = useState([
     {
       id: 1,
       make: 'Tesla',
       model: 'Model S',
       year: 2023,
+      image: '/placeholder-car1.jpg',
+      price: 285892,
+      style: 'Tesla',
+      type: 'Electric',
       color: 'Pearl White',
       license: 'TESLA-01',
       mileage: 15420,
@@ -26,13 +27,18 @@ const MyVehicles = () => {
       lastService: '2025-04-12',
       status: 'scheduled',
       health: 98,
-      batteryLevel: 85
+      batteryLevel: 85,
+      isFavorite: false
     },
     {
       id: 2,
       make: 'BMW',
       model: 'X5 M Competition',
       year: 2022,
+      image: '/placeholder-car2.jpg',
+      price: 285892,
+      style: 'BMW',
+      type: 'SUV',
       color: 'Carbon Black',
       license: 'BMW-X5M',
       mileage: 28750,
@@ -45,248 +51,263 @@ const MyVehicles = () => {
       },
       lastService: '2025-05-20',
       status: 'scheduled',
-      health: 94
+      health: 94,
+      isFavorite: true
     },
     {
       id: 3,
       make: 'Porsche',
       model: '911 Turbo S',
       year: 2024,
+      image: '/placeholder-car3.jpg',
+      price: 285892,
+      style: 'Porsche',
+      type: 'Sports',
       color: 'Guards Red',
       license: 'POR-911',
       mileage: 8920,
       nextAppointment: null,
       lastService: '2025-03-08',
       status: 'needs_scheduling',
-      health: 89
+      health: 89,
+      isFavorite: false
+    },
+    {
+      id: 4,
+      make: 'Audi',
+      model: 'R8 V10',
+      year: 2023,
+      image: '/placeholder-car4.jpg',
+      price: 285892,
+      style: 'Audi',
+      type: 'Sports',
+      color: 'Quantum Gray',
+      license: 'AUD-R8V',
+      mileage: 12340,
+      nextAppointment: null,
+      lastService: '2025-02-15',
+      status: 'needs_scheduling',
+      health: 91,
+      isFavorite: false
     }
   ]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short',
-      month: 'short', 
-      day: 'numeric'
-    });
-  };
 
-  const getStatusConfig = (status: string) => {
-    switch (status) {
-      case 'scheduled': 
-        return { 
-          bg: 'bg-gradient-to-r from-emerald-50 to-teal-50', 
-          text: 'text-emerald-700', 
-          border: 'border-emerald-200',
-          dot: 'bg-emerald-400'
-        };
-      case 'needs_scheduling': 
-        return { 
-          bg: 'bg-gradient-to-r from-amber-50 to-orange-50', 
-          text: 'text-amber-700', 
-          border: 'border-amber-200',
-          dot: 'bg-amber-400'
-        };
-      default: 
-        return { 
-          bg: 'bg-gradient-to-r from-gray-50 to-slate-50', 
-          text: 'text-gray-700', 
-          border: 'border-gray-200',
-          dot: 'bg-gray-400'
-        };
-    }
-  };
-
-  const getHealthColor = (health: number) => {
-    if (health >= 95) return 'text-emerald-600';
-    if (health >= 85) return 'text-blue-600';
-    if (health >= 75) return 'text-amber-600';
-    return 'text-red-600';
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-40">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-indigo-100/30"></div>
-      </div>
-      
-      <div className="relative z-10 p-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="flex justify-between items-start mb-12 opacity-0 animate-[fadeInUp_0.8s_ease-out_forwards]">
-            <div className="space-y-2">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
-                My Fleet
-              </h1>
-              <p className="text-slate-600 text-lg">Premium vehicle management and service scheduling</p>
+      {/* Main Content */}
+      <div className="flex">
+        {/* Content Area */}
+        <div className="flex-1 p-8">
+          {/* Filter Controls */}
+          <div className="grid grid-cols-5 gap-4 mb-8">
+            <div>
+              <label className="block text-slate-600 text-sm mb-2 font-medium">Location</label>
+              <select className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                <option>GST, Mall Gulshan</option>
+              </select>
             </div>
-            <AddVehicleDialog />
+            <div>
+              <label className="block text-slate-600 text-sm mb-2 font-medium">Pick Up Date</label>
+              <select className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                <option>06-Sep-2023</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-slate-600 text-sm mb-2 font-medium">Drop of Date</label>
+              <select className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                <option>06-Sep-2023</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-slate-600 text-sm mb-2 font-medium">Pickup Time</label>
+              <select className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                <option>10:00 AM</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-slate-600 text-sm mb-2 font-medium">Drop off Time</label>
+              <select className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+                <option>05:00 PM</option>
+              </select>
+            </div>
           </div>
 
-          {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]">
-            {[
-              { label: 'Total Vehicles', value: '3', icon: Car, gradient: 'from-blue-500 to-cyan-500' },
-              { label: 'Scheduled Services', value: '2', icon: Calendar, gradient: 'from-emerald-500 to-teal-500' },
-              { label: 'Avg Health Score', value: '94%', icon: Gauge, gradient: 'from-violet-500 to-purple-500' },
-              { label: 'Next Service', value: '24 days', icon: Clock, gradient: 'from-orange-500 to-red-500' }
-            ].map((stat, index) => (
-              <div key={index} className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg shadow-slate-200/50">
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.gradient} shadow-lg`}>
-                    <stat.icon className="text-white" size={24} />
+          {/* Available Cars Section */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-slate-800">Available Cars</h2>
+            <div className="flex items-center gap-4">
+              <button className="text-slate-600 hover:text-slate-800 font-medium">View All</button>
+              <button className="text-slate-600 hover:text-slate-800 font-medium">Recent Activity</button>
+              <Info className="text-slate-500" size={20} />
+            </div>
+          </div>
+
+          {/* Cars Grid */}
+          <div className="grid grid-cols-2 gap-6">
+            {vehicles.map((vehicle) => (
+              <div key={vehicle.id} className="bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 relative group" style={{ 
+                boxShadow: '0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                transform: 'perspective(1000px) rotateX(1deg)',
+                transformStyle: 'preserve-3d'
+              }}>
+                {/* Curved bottom shadow effect */}
+                <div className="absolute -bottom-2 left-4 right-4 h-4 bg-slate-200/40 rounded-full blur-md" style={{
+                  transform: 'perspective(100px) rotateX(45deg) scaleY(0.3)'
+                }}></div>
+                
+                {/* Favorite Button */}
+                <button className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-lg hover:scale-110 transition-transform">
+                  {vehicle.isFavorite ? (
+                    <Heart className="text-red-500 fill-current" size={20} />
+                  ) : (
+                    <Heart className="text-slate-400 hover:text-red-500" size={20} />
+                  )}
+                </button>
+
+                {/* Car Image */}
+                <div className="h-64 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-6 relative">
+                  <img 
+                    src="/black-isolated-car_23-2151852894-removebg-preview.png" 
+                    alt={`${vehicle.make} ${vehicle.model}`}
+                    className="w-full h-full object-contain transform scale-110 group-hover:scale-115 transition-transform duration-300"
+                  />
+                </div>
+
+                {/* Car Details */}
+                <div className="p-6 bg-white relative">
+                  <h3 className="text-xl font-bold text-slate-800 mb-4">
+                    {vehicle.make} {vehicle.model}
+                  </h3>
+                  
+                  <div className="grid grid-cols-3 gap-4 text-sm mb-6">
+                    <div>
+                      <span className="text-slate-500">Style: </span>
+                      <span className="text-slate-800 font-medium">{vehicle.style}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Type: </span>
+                      <span className="text-slate-800 font-medium">{vehicle.type}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Color: </span>
+                      <span className="text-slate-800 font-medium">{vehicle.color}</span>
+                    </div>
+                  </div>
+
+                  <div className="text-2xl font-bold text-blue-600">
+                    $ {vehicle.price.toLocaleString()}
                   </div>
                 </div>
-                <div className="text-3xl font-bold text-slate-800 mb-1">{stat.value}</div>
-                <div className="text-slate-600 text-sm font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
+        </div>
 
-          {/* Vehicles Grid */}
-          <div className="grid gap-8 lg:grid-cols-1 xl:grid-cols-2 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards]">
-            {vehicles.map((vehicle) => {
-              const statusConfig = getStatusConfig(vehicle.status);
-              
-              return (
-                <div key={vehicle.id} className="group bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl shadow-slate-200/50 border border-white/20 overflow-hidden hover:shadow-2xl hover:shadow-slate-300/50 transition-all duration-500 hover:-translate-y-1 opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards]" style={{ animationDelay: `${0.6 + (vehicle.id * 0.1)}s` }}>
-                  {/* Vehicle Header with Gradient */}
-                  <div className="bg-gradient-to-r from-slate-800 via-blue-800 to-indigo-800 p-8 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
-                    
-                    <div className="relative z-10 flex justify-between items-start mb-6">
-                      <div className="flex items-center gap-4">
-                        <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
-                          <Car className="text-white" size={28} />
-                        </div>
-                        <div>
-                          <h3 className="text-2xl font-bold mb-1">
-                            {vehicle.year} {vehicle.make} {vehicle.model}
-                          </h3>
-                          <p className="text-blue-100">{vehicle.color} • {vehicle.license}</p>
-                        </div>
-                      </div>
-                      
-                      <div className={`px-4 py-2 rounded-full text-sm font-semibold ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} border backdrop-blur-sm`}>
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${statusConfig.dot}`}></div>
-                          {vehicle.status === 'scheduled' ? 'Scheduled' : 'Needs Service'}
-                        </div>
-                      </div>
-                    </div>
+        {/* Right Sidebar */}
+        <div className="w-80 bg-white/70 backdrop-blur-sm p-6 border border-white/20">
+          {/* Export Button */}
+          <button className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-3 px-4 rounded-lg font-medium mb-8 flex items-center justify-center gap-2 shadow-lg">
+            📤 Export
+          </button>
 
-                    {/* Vehicle Stats */}
-                    <div className="relative z-10 grid grid-cols-2 md:grid-cols-3 gap-6">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-white">{vehicle.mileage.toLocaleString()}</div>
-                        <div className="text-blue-200 text-sm">Miles</div>
-                      </div>
-                      <div className="text-center">
-                        <div className={`text-2xl font-bold ${getHealthColor(vehicle.health)}`}>{vehicle.health}%</div>
-                        <div className="text-blue-200 text-sm">Health Score</div>
-                      </div>
-                      {vehicle.batteryLevel && (
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-emerald-400">{vehicle.batteryLevel}%</div>
-                          <div className="text-blue-200 text-sm">Battery</div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+          {/* Car Info Section */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
+                <span className="text-2xl">🚗</span>
+              </div>
+              <div>
+                <h3 className="text-slate-800 font-bold">Lamborghini Autofill</h3>
+                <p className="text-slate-600 text-sm">2 hrs Rescaling</p>
+              </div>
+            </div>
 
-                  {/* Appointment Section */}
-                  <div className="p-8">
-                    {vehicle.nextAppointment ? (
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-3 text-slate-800">
-                          <Calendar size={20} className="text-blue-600" />
-                          <span className="font-semibold text-lg">Upcoming Service</span>
-                        </div>
-                        
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-                          <div className="grid gap-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <Clock size={18} className="text-blue-600" />
-                                <div>
-                                  <div className="font-bold text-slate-800">{formatDate(vehicle.nextAppointment.date)}</div>
-                                  <div className="text-slate-600 text-sm">{vehicle.nextAppointment.time} • {vehicle.nextAppointment.estimatedDuration}</div>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="bg-white/60 rounded-xl p-4">
-                              <div className="font-semibold text-slate-800 mb-2">{vehicle.nextAppointment.service}</div>
-                              <div className="flex items-center gap-2 text-slate-600">
-                                <MapPin size={16} />
-                                <span className="text-sm">{vehicle.nextAppointment.location}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+            <div className="text-2xl font-bold text-blue-600 mb-4">$ 285,892</div>
 
-                        {/* Premium Action Buttons */}
-                        <div className="flex gap-4">
-                          <button className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30">
-                            View Details
-                          </button>
-                          <button 
-                            onClick={() => {
-                              const params = new URLSearchParams({
-                                currentDate: vehicle.nextAppointment.date,
-                                currentTime: vehicle.nextAppointment.time,
-                                serviceName: vehicle.nextAppointment.service,
-                                location: vehicle.nextAppointment.location,
-                                vehicleName: `${vehicle.year} ${vehicle.make} ${vehicle.model}`
-                              });
-                              router.push(`/dashboard/appointments/reschedule?${params.toString()}`);
-                            }}
-                            className="flex-1 bg-white hover:bg-slate-50 text-slate-700 py-3 px-6 rounded-xl font-semibold transition-all duration-300 border border-slate-200 hover:border-slate-300"
-                          >
-                            Reschedule
-                          </button>
-                          <button className="bg-white hover:bg-slate-50 text-slate-700 p-3 rounded-xl transition-all duration-300 border border-slate-200 hover:border-slate-300">
-                            <Phone size={18} />
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-3 text-amber-600">
-                          <AlertTriangle size={20} />
-                          <span className="font-semibold text-lg">Service Required</span>
-                        </div>
-                        
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100 text-center">
-                          <div className="mb-4">
-                            <Wrench size={32} className="text-amber-500 mx-auto mb-3" />
-                            <p className="text-slate-700 font-medium">Your vehicle is due for scheduled maintenance</p>
-                            <p className="text-slate-600 text-sm mt-2">Last service: {formatDate(vehicle.lastService)}</p>
-                          </div>
-                          <button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3 px-8 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/30">
-                            Schedule Service
-                          </button>
-                        </div>
-                      </div>
-                    )}
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <span className="text-slate-600">Car Info</span>
+                <Info className="text-slate-500" size={16} />
+              </div>
 
-                    {/* Quick Actions */}
-                    <div className="flex gap-3 pt-6 border-t border-slate-100">
-                      <button className="flex items-center gap-2 text-slate-600 hover:text-slate-800 px-4 py-2 rounded-xl hover:bg-slate-50 transition-all duration-300 group">
-                        <Settings size={16} className="group-hover:rotate-90 transition-transform duration-300" />
-                        <span className="font-medium">Manage</span>
-                      </button>
-                      <button className="flex items-center gap-2 text-slate-600 hover:text-slate-800 px-4 py-2 rounded-xl hover:bg-slate-50 transition-all duration-300">
-                        <span className="font-medium">Service History</span>
-                        <ChevronRight size={16} />
-                      </button>
-                    </div>
-                  </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Georgia bills, 16</span>
+                  <span className="text-slate-800 font-medium">48 KM</span>
                 </div>
-              );
-            })}
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">105 Saint<br />Laurence UK</span>
+                  <span className="text-slate-800 font-medium">2h 18m</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">103 Chicago</span>
+                  <span className="text-slate-800 font-medium">7h/km/h</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 mt-4">
+                <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                <div className="w-4 h-4 bg-slate-300 rounded-full"></div>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Fuel</span>
+                  <span className="text-slate-800 font-medium">12 Liters</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">People Used</span>
+                  <span className="text-slate-800 font-medium">4 Person</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Condition</span>
+                  <span className="text-slate-800 font-medium">Average</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* User Profile */}
+          <div className="border-t border-slate-200 pt-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
+              <div>
+                <p className="text-slate-800 font-medium">Matthew Jones</p>
+                <p className="text-slate-600 text-sm">matthew@gmail.com</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 mb-6">
+              <button className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+                <Phone className="text-slate-600" size={16} />
+              </button>
+              <button className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+                <Search className="text-slate-600" size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* Another User */}
+          <div className="border-t border-slate-200 pt-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full"></div>
+              <div>
+                <p className="text-slate-800 font-medium">Andrew Smith</p>
+                <p className="text-slate-600 text-sm">3 hrs Rescaling</p>
+              </div>
+              <div className="ml-auto flex gap-2">
+                <button className="p-1 bg-slate-100 hover:bg-slate-200 rounded transition-colors">
+                  <Phone className="text-slate-600" size={14} />
+                </button>
+                <button className="p-1 bg-slate-100 hover:bg-slate-200 rounded transition-colors">
+                  <Search className="text-slate-600" size={14} />
+                </button>
+              </div>
+            </div>
+            <div className="text-blue-600 font-bold mt-2">$ 44,7K</div>
           </div>
         </div>
       </div>
