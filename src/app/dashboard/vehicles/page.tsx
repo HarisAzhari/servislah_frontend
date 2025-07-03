@@ -1,9 +1,19 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Heart, Info, Phone, Search } from 'lucide-react';
+import { Vehicle } from '@/types/vehicle';
+import { vehicleService } from '@/lib/services/vehicleService';
 
 const MyVehicles = () => {
+  const [vehiclesAPI, setVehiclesAPI] = useState<Vehicle[]>([])
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      const vehicles = await vehicleService.getVehicles('1591e87d-bbc6-4b59-9f89-bd7d9b3e0286')
+      setVehiclesAPI(vehicles as Vehicle[])
+    }
+    fetchVehicles()
+  }, [])
   const [vehicles] = useState([
     {
       id: 1,
@@ -147,7 +157,7 @@ const MyVehicles = () => {
           {/* Cars Grid */}
           <div className="grid grid-cols-2 gap-6">
             {vehicles.map((vehicle) => (
-              <div key={vehicle.id} className="bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 relative group" style={{ 
+              <div key={vehicle.id} className="bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 relative group" style={{
                 boxShadow: '0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                 transform: 'perspective(1000px) rotateX(1deg)',
                 transformStyle: 'preserve-3d'
@@ -156,7 +166,7 @@ const MyVehicles = () => {
                 <div className="absolute -bottom-2 left-4 right-4 h-4 bg-slate-200/40 rounded-full blur-md" style={{
                   transform: 'perspective(100px) rotateX(45deg) scaleY(0.3)'
                 }}></div>
-                
+
                 {/* Favorite Button */}
                 <button className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-lg hover:scale-110 transition-transform">
                   {vehicle.isFavorite ? (
@@ -168,8 +178,8 @@ const MyVehicles = () => {
 
                 {/* Car Image */}
                 <div className="h-64 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-6 relative">
-                  <img 
-                    src="/black-isolated-car_23-2151852894-removebg-preview.png" 
+                  <img
+                    src="/black-isolated-car_23-2151852894-removebg-preview.png"
                     alt={`${vehicle.make} ${vehicle.model}`}
                     className="w-full h-full object-contain transform scale-110 group-hover:scale-115 transition-transform duration-300"
                   />
@@ -180,7 +190,7 @@ const MyVehicles = () => {
                   <h3 className="text-xl font-bold text-slate-800 mb-4">
                     {vehicle.make} {vehicle.model}
                   </h3>
-                  
+
                   <div className="grid grid-cols-3 gap-4 text-sm mb-6">
                     <div>
                       <span className="text-slate-500">Style: </span>

@@ -6,12 +6,17 @@ export const vehicleService = {
   // Fetch all vehicles for a user
   async getVehicles(userId: string): Promise<Vehicle[]> {
     try {
-      const response = await fetch(`${config.apiBaseUrl}/vehicles?user_id=${userId}`)
-      
+      const response = await fetch(`${config.apiBaseUrl}/vehicles?user_id=${userId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+
+      })
+
       if (!response.ok) {
         throw new ApiError(response.status, `Failed to fetch vehicles: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Error fetching vehicles:', error)
@@ -32,7 +37,7 @@ export const vehicleService = {
         },
         body: JSON.stringify(vehicleData),
       })
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new ApiError(
@@ -40,7 +45,7 @@ export const vehicleService = {
           errorData.message || `Failed to create vehicle: ${response.status}`
         )
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Error creating vehicle:', error)
@@ -61,7 +66,7 @@ export const vehicleService = {
         },
         body: JSON.stringify(vehicleData),
       })
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new ApiError(
@@ -69,7 +74,7 @@ export const vehicleService = {
           errorData.message || `Failed to update vehicle: ${response.status}`
         )
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Error updating vehicle:', error)
@@ -86,7 +91,7 @@ export const vehicleService = {
       const response = await fetch(`${config.apiBaseUrl}/vehicles/${vehicleId}`, {
         method: 'DELETE',
       })
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new ApiError(
@@ -107,11 +112,11 @@ export const vehicleService = {
   async getVehicle(vehicleId: string): Promise<Vehicle> {
     try {
       const response = await fetch(`${config.apiBaseUrl}/vehicles/${vehicleId}`)
-      
+
       if (!response.ok) {
         throw new ApiError(response.status, `Failed to fetch vehicle: ${response.status}`)
       }
-      
+
       return await response.json()
     } catch (error) {
       console.error('Error fetching vehicle:', error)
