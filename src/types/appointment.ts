@@ -1,18 +1,32 @@
+import { Mechanic, ServiceCenter } from "./service-center"
+
 export interface Appointment {
   id: string
+  service_center_id: string
   user_id: string
   vehicle_id: string
-  service_type: string
-  service_category: "MAINTENANCE" | "REPAIR" | "INSPECTION" | "EMERGENCY"
-  appointment_date: string
-  appointment_time: string
-  location: AppointmentLocation
-  status: "PENDING" | "CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
-  notes?: string
-  estimated_duration: number // in minutes
-  estimated_cost?: number
-  actual_cost?: number
   mechanic_id?: string
+  service_bay_id?: string
+  service_center?: ServiceCenter | null
+  user?: any
+  vehicle?: any
+  mechanic?: Mechanic | null
+  service_bay?: any
+  date: string
+  time: string
+  status: "PENDING" | "CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
+  items: {
+    id: string
+    service_id: string
+    service_appointment_id: string
+    service?: any
+    service_appointment?: any
+    price: number
+    duration: number
+    created_at: string
+    updated_at: string
+  }[]
+  reviews?: any
   created_at: string
   updated_at: string
 }
@@ -29,28 +43,27 @@ export interface AppointmentLocation {
 }
 
 export interface CreateAppointmentRequest {
+  service_center_id: string
+  user_id: string
   vehicle_id: string
-  service_type: string
-  service_category: "MAINTENANCE" | "REPAIR" | "INSPECTION" | "EMERGENCY"
-  appointment_date: string
-  appointment_time: string
-  location: AppointmentLocation
-  notes?: string
-  estimated_duration: number
+  date: string
+  time: string
+  items: {
+    service_id: string
+  }[]
 }
 
+
+
 export interface UpdateAppointmentRequest {
-  service_type?: string
-  service_category?: "MAINTENANCE" | "REPAIR" | "INSPECTION" | "EMERGENCY"
-  appointment_date?: string
-  appointment_time?: string
-  location?: AppointmentLocation
-  status?: "PENDING" | "CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
-  notes?: string
-  estimated_duration?: number
-  estimated_cost?: number
-  actual_cost?: number
-  mechanic_id?: string
+  service_center_id: string
+  user_id: string,
+  vehicle_id?: string,
+  date?: string,
+  time?: string,
+  items: {
+    service_id: string
+  }[]
 }
 
 export interface AppointmentResponse {
@@ -75,4 +88,13 @@ export interface AvailableSlotsResponse {
   slots: AppointmentSlot[]
   service_type: string
   location: string
-} 
+}
+
+
+export interface QueryAppoinmentRequest {
+  user_id?: string
+  date?: string
+  time?: string
+  status?: string
+  service_center_id?: string
+}

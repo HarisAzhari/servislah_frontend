@@ -3,9 +3,12 @@ import { API_BASE_URL } from "../constant";
 import { userService } from "./userService";
 import axios from "axios";
 
+const API_URL = 'https://servislahserver-production.up.railway.app/api/v1'
+
+// const API_URL = 'http://localhost:7878/api/v1'
 export const loginWithGoogle = async (): Promise<string> => {
     const frontendCallbackUrl = `${window.location.origin}/auth/callback`;
-    const response = await axios.get(`${API_BASE_URL}/auth/google/initiate`, {
+    const response = await axios.get(`${API_URL}/auth/google/initiate`, {
         headers: {
             'Content-Type': 'application/json',
         },
@@ -25,7 +28,7 @@ export const loginWithGoogle = async (): Promise<string> => {
 
 export const handleGoogleCallback = async (code: string): Promise<GoogleCallbackResponse | null> => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/auth/google/callback`, {
+        const response = await axios.get(`${API_URL}/auth/google/callback`, {
             headers: {
                 'Content-Type': 'application/json',
             },

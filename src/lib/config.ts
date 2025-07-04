@@ -1,3 +1,5 @@
+import axios, { AxiosInstance } from "axios";
+
 // Log environment information for debugging
 console.log('🔧 Config initialization:');
 console.log('   🌍 NODE_ENV:', process.env.NODE_ENV);
@@ -26,4 +28,16 @@ export const config = {
 console.log('📋 Final config values:');
 console.log('   🎯 apiBaseUrl:', config.apiBaseUrl);
 console.log('   📱 appName:', config.appName);
-console.log('   🔢 appVersion:', config.appVersion); 
+console.log('   🔢 appVersion:', config.appVersion);
+
+
+
+export const axiosInstance = (token: string): AxiosInstance => {
+  return axios.create({
+    baseURL: 'https://servislahgetway-production.up.railway.app',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+}

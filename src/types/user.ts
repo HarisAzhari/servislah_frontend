@@ -14,6 +14,10 @@ export interface User {
   appointments: any;
   created_at: string;
   updated_at: string;
+  backend_tokens: {
+    access_token: string;
+    refresh_token: string;
+  };
 }
 
 export interface UserProfile {
@@ -71,4 +75,13 @@ export interface LoginResponse {
     access_token: string;
     refresh_token: string;
   };
-} 
+}
+
+export interface UserSession {
+  user_id: string;
+  email: string;
+  backend_tokens: {
+    access_token: string;
+    refresh_token: string;
+  };
+}

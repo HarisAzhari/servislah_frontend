@@ -1,332 +1,513 @@
 "use client"
+import React, { useEffect, useState } from 'react';
+import { Calendar, Clock, Car, MapPin, Phone, Mail, ArrowLeft, Check, Plus, X, Loader2, Search } from 'lucide-react';
+import { Service, ServiceCenter } from '@/types/service-center';
+import { Vehicle } from '@/types/vehicle';
+import { useCreateAppointment } from '@/lib/tanstack/appoinment-tanstack';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useGetServiceCenterById, useGetServiceCenters } from '@/lib/tanstack/service-center.tanstack';
+import { toast } from 'sonner';
+import { useGetUserVehicles, useGetVehicleByUserId } from '@/lib/tanstack/vehicle-tanstack';
+import { CreateAppointmentRequest } from '@/types/appointment';
+import DefaultButton from '@/components/default-button';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { MapPin, ArrowLeft, Wrench, Phone, Star, Navigation } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
+const CreateAppointmentPage: React.FC = () => {
+  const [selectedServices, setSelectedServices] = useState<Service[]>([]);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [serviceCenterId, setServiceCenterId] = useState<string | null>(null);
 
-// Mock service centers data
-const serviceCenters = [
-  {
-    id: "1",
-    name: "AutoCare Premium",
-    type: "FULL SERVICE",
-    location: "Kuala Lumpur",
-    address: "123 Jalan Sultan, KL City Centre, 50000 Kuala Lumpur",
-    image: "/api/placeholder/80/80",
-    rating: 4.9,
-    distance: "2.1 km",
-    availability: [
-      { date: "Nov 20, 2024", available: true },
-      { date: "Nov 21, 2024", available: false },
-      { date: "Nov 22, 2024", available: true }
-    ],
-    coordinates: { lat: 3.1390, lng: 101.6869 },
-    phone: "+60 3-2123 4567",
-    services: ["Oil Change", "Brake Service", "AC Repair", "Engine Diagnostic"]
-  },
-  {
-    id: "2",
-    name: "SpeedFix Workshop",
-    type: "EXPRESS SERVICE",
-    location: "Petaling Jaya",
-    address: "45 Jalan SS2/24, Damansara Heights, 47300 Petaling Jaya",
-    image: "/api/placeholder/80/80",
-    rating: 4.7,
-    distance: "5.2 km",
-    availability: [
-      { date: "Nov 20, 2024", available: true },
-      { date: "Nov 21, 2024", available: true },
-      { date: "Nov 22, 2024", available: false }
-    ],
-    coordinates: { lat: 3.1073, lng: 101.6505 },
-    phone: "+60 3-7956 2345",
-    services: ["Quick Oil Change", "Tire Service", "Battery Check"]
-  },
-  {
-    id: "3",
-    name: "CoolCar Services",
-    type: "AC SPECIALIST",
-    location: "Shah Alam",
-    address: "78 Jalan Tengku Ampuan Zabedah C9/C, 40100 Shah Alam",
-    image: "/api/placeholder/80/80",
-    rating: 4.8,
-    distance: "8.5 km",
-    availability: [
-      { date: "Nov 20, 2024", available: false },
-      { date: "Nov 21, 2024", available: true },
-      { date: "Nov 22, 2024", available: true }
-    ],
-    coordinates: { lat: 3.0733, lng: 101.5185 },
-    phone: "+60 3-5511 8899",
-    services: ["AC Repair", "Cooling System", "Radiator Service"]
-  },
-  {
-    id: "4",
-    name: "ProMech Auto Center",
-    type: "ENGINE SPECIALIST",
-    location: "Subang Jaya",
-    address: "32 Jalan SS15/4D, SS15, 47500 Subang Jaya",
-    image: "/api/placeholder/80/80",
-    rating: 4.6,
-    distance: "12.3 km",
-    availability: [
-      { date: "Nov 20, 2024", available: true },
-      { date: "Nov 21, 2024", available: true },
-      { date: "Nov 22, 2024", available: true }
-    ],
-    coordinates: { lat: 3.0738, lng: 101.5906 },
-    phone: "+60 3-5633 1122",
-    services: ["Engine Overhaul", "Transmission", "Suspension"]
-  }
-]
-
-export default function CreateAppointmentPage() {
-  const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedFilter, setSelectedFilter] = useState("Anything")
-
-  const filteredCenters = serviceCenters.filter(center => 
-    searchQuery === "" || 
-    center.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    center.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    center.type.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "FULL SERVICE": return "bg-blue-100 text-blue-800"
-      case "EXPRESS SERVICE": return "bg-green-100 text-green-800"
-      case "AC SPECIALIST": return "bg-cyan-100 text-cyan-800"
-      case "ENGINE SPECIALIST": return "bg-purple-100 text-purple-800"
-      default: return "bg-gray-100 text-gray-800"
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const serviceCenterId = searchParams.get('service_center_id');
+    if (serviceCenterId) {
+      setServiceCenterId(serviceCenterId);
     }
-  }
+  }, [searchParams]);
 
-  const handleSelectCenter = (centerId: string) => {
-    // Navigate to appointment booking with selected center
-    router.push(`/dashboard/appointments/book?centerId=${centerId}`)
-  }
+  const { data: serviceCenterResponse } = useGetServiceCenterById(serviceCenterId || '');
+  const serviceCenter = serviceCenterResponse?.data?.service_center;
+
+  const { data: serviceCenters } = useGetServiceCenters();
+
+  const filteredServiceCenters = serviceCenters
+    ?.filter((center: ServiceCenter) =>
+      center.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      center.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+  const {
+    mutate: createAppointment,
+    isPending: isCreatingAppointment
+  } = useCreateAppointment();
+
+  const { data: vehicles } = useGetVehicleByUserId();
+
+
+  const availableServices: Service[] = serviceCenter?.services || [
+
+  ];
+
+  const userVehicles: Vehicle[] = vehicles || [];
+
+  const availableTimes: string[] = [
+    "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
+    "11:00", "11:30", "14:00", "14:30", "15:00", "15:30",
+    "16:00", "16:30", "17:00", "17:30"
+  ];
+
+  const toggleService = (service: Service) => {
+    setSelectedServices(prev => {
+      const exists = prev.find(s => s.id === service.id);
+      if (exists) {
+        return prev.filter(s => s.id !== service.id);
+      } else {
+        return [...prev, service];
+      }
+    });
+  };
+
+  const getTotalPrice = () => {
+    return selectedServices.reduce((total, service) => total + service.price, 0);
+  };
+
+  const getTotalDuration = () => {
+    return selectedServices.reduce((total, service) => total + service.duration, 0);
+  };
+
+  const handleSubmit = () => {
+    if (!serviceCenter || !selectedVehicle?.id) return;
+
+    const payload = {
+      service_center_id: serviceCenter.id,
+      vehicle_id: selectedVehicle.id,
+      date: selectedDate,
+      time: selectedTime,
+      items: selectedServices.map(service => ({
+        service_id: service.id
+      }))
+    };
+
+    createAppointment(payload as CreateAppointmentRequest);
+  };
+
+  const isFormValid: boolean = selectedServices.length > 0 && selectedVehicle !== null && selectedDate !== '' && selectedTime !== '';
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <button 
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <ArrowLeft size={20} />
-          <span>Back</span>
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Service Centers</h1>
-          <p className="text-gray-600">Find and book your preferred service center</p>
+      <div className="bg-white shadow-sm rounded-xl">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="flex items-center gap-4">
+            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Book Appointment</h1>
+              <p className="text-gray-600 mt-1">Schedule your vehicle service</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Search and Filter */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex-1 relative">
-          <Input
-            placeholder="Search service centers..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-12"
-          />
-          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Filter:</span>
-          <select 
-            value={selectedFilter}
-            onChange={(e) => setSelectedFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="Anything">Anything</option>
-            <option value="FULL SERVICE">Full Service</option>
-            <option value="EXPRESS SERVICE">Express Service</option>
-            <option value="AC SPECIALIST">AC Specialist</option>
-            <option value="ENGINE SPECIALIST">Engine Specialist</option>
-          </select>
-        </div>
-      </div>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {!serviceCenterId ? (
+          <div className="space-y-6">
+            {/* Search Bar */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search service centers..."
+                value={searchTerm}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                className="pl-10 h-9 text-sm border-gray-300 focus:border-[#363DFF] focus:ring-[#363DFF]/20 transition-colors"
+              />
+            </div>
 
-      {/* Map Section */}
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
-          <div className="relative h-96 bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
-            {/* Map Placeholder - you can integrate with Google Maps or Mapbox here */}
-            <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-              <div className="text-center space-y-4">
-                <div className="relative w-full h-full bg-gradient-to-br from-blue-100 via-green-50 to-blue-50">
-                  {/* Simulated map with service center markers */}
-                  <div className="absolute inset-0 opacity-60">
-                    <svg width="100%" height="100%" viewBox="0 0 800 400" className="w-full h-full">
-                      {/* Map background */}
-                      <rect width="800" height="400" fill="#f0f9ff"/>
-                      
-                      {/* Roads */}
-                      <path d="M0 200 L800 200" stroke="#e5e7eb" strokeWidth="8"/>
-                      <path d="M200 0 L200 400" stroke="#e5e7eb" strokeWidth="6"/>
-                      <path d="M600 0 L600 400" stroke="#e5e7eb" strokeWidth="6"/>
-                      <path d="M0 100 L800 100" stroke="#f3f4f6" strokeWidth="4"/>
-                      <path d="M0 300 L800 300" stroke="#f3f4f6" strokeWidth="4"/>
-                      
-                      {/* Service center markers */}
-                      {serviceCenters.map((center, index) => (
-                        <g key={center.id}>
-                          <circle 
-                            cx={150 + index * 150} 
-                            cy={120 + (index % 2) * 160} 
-                            r="12" 
-                            fill="#3b82f6" 
-                            className="animate-pulse"
-                          />
-                          <circle 
-                            cx={150 + index * 150} 
-                            cy={120 + (index % 2) * 160} 
-                            r="8" 
-                            fill="white"
-                          />
-                          <text 
-                            x={150 + index * 150} 
-                            y={140 + (index % 2) * 160} 
-                            textAnchor="middle" 
-                            className="text-xs font-semibold" 
-                            fill="#1f2937"
-                          >
-                            {center.name.split(' ')[0]}
-                          </text>
-                        </g>
-                      ))}
-                    </svg>
-                  </div>
-                  
-                  {/* Map overlay info */}
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Navigation size={16} className="text-blue-600" />
-                      <span className="font-medium text-gray-900">Kuala Lumpur Area</span>
+            {/* Service Centers List */}
+            <div className="space-y-4">
+              {filteredServiceCenters?.map((center: ServiceCenter, index: number) => (
+                <div
+                  key={center.id}
+                  className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200"
+                >
+                  <div className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                              {center.name}
+                            </h3>
+                            <div className="flex items-center space-x-4 text-sm text-gray-600">
+                              <div className="flex items-center space-x-1">
+                                <Phone className="h-4 w-4 text-gray-400" />
+                                <span>{center.phone}</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Mail className="h-4 w-4 text-gray-400" />
+                                <span>{center.email}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-sm text-gray-600">
+                          <div className="flex items-center space-x-1">
+                            <MapPin className="h-4 w-4 text-gray-400" />
+                            <span>{center.locations?.address}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3 ml-6">
+                        <Button
+                          onClick={() => router.push(`/dashboard/appointments/create?service_center_id=${center.id}`)}
+                          size="sm"
+                          className="bg-[#363DFF] hover:bg-[#363DFF]/90 text-white px-4 h-9 text-sm font-medium"
+                        >
+                          <Car className="h-4 w-4 mr-2" />
+                          Book Service
+                        </Button>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-600 mt-1">{filteredCenters.length} service centers nearby</p>
                   </div>
-                  
-                  {/* Zoom controls */}
-                  <div className="absolute top-4 right-4 flex flex-col bg-white rounded-lg shadow-lg overflow-hidden">
-                    <button className="p-2 hover:bg-gray-50 border-b border-gray-100">
-                      <span className="text-lg font-bold text-gray-600">+</span>
-                    </button>
-                    <button className="p-2 hover:bg-gray-50">
-                      <span className="text-lg font-bold text-gray-600">−</span>
-                    </button>
-                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Progress Steps */}
+            <div className="mb-8">
+              <div className="flex items-center justify-center">
+                <div className="flex items-center space-x-8">
+                  {[
+                    { step: 1, label: "Services", icon: "🔧" },
+                    { step: 2, label: "Vehicle", icon: "🚗" },
+                    { step: 3, label: "Date & Time", icon: "📅" },
+                    { step: 4, label: "Review", icon: "✅" }
+                  ].map((item, index) => (
+                    <div key={item.step} className="flex items-center">
+                      <div className={`flex items-center justify-center w-10 h-10 rounded-full ${currentStep >= item.step ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+                        }`}>
+                        <span className="text-sm font-medium">{item.step}</span>
+                      </div>
+                      <span className={`ml-2 text-sm font-medium ${currentStep >= item.step ? 'text-blue-600' : 'text-gray-500'
+                        }`}>
+                        {item.label}
+                      </span>
+                      {index < 3 && (
+                        <div className={`ml-8 w-16 h-0.5 ${currentStep > item.step ? 'bg-blue-600' : 'bg-gray-200'
+                          }`} />
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Service Centers List */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-gray-900">Select Service Center</h2>
-        
-        <div className="grid gap-4">
-          {filteredCenters.map((center) => (
-            <Card key={center.id} className="hover:shadow-lg transition-all duration-200 border border-gray-200 hover:border-gray-300">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-6">
-                  {/* Service Center Image */}
-                  <div className="flex-shrink-0">
-                    <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-xl flex items-center justify-center">
-                      <Wrench size={32} className="text-blue-600" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Main Content */}
+              <div className="lg:col-span-2">
+                {/* Step 1: Service Selection */}
+                {currentStep === 1 && (
+                  <div className="bg-white rounded-2xl p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Select Services</h2>
+                    <div className="space-y-4">
+                      {availableServices.map((service: Service) => {
+                        const isSelected = selectedServices.find(s => s.id === service.id);
+                        return (
+                          <div
+                            key={service.id}
+                            onClick={() => toggleService(service)}
+                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${isSelected
+                              ? 'border-blue-600 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3">
+                                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${isSelected ? 'border-blue-600 bg-blue-600' : 'border-gray-300'
+                                    }`}>
+                                    {isSelected && <Check className="w-3 h-3 text-white" />}
+                                  </div>
+                                  <div>
+                                    <h3 className="font-medium text-gray-900">{service.name}</h3>
+                                    <p className="text-sm text-gray-600">{service.description}</p>
+                                    <div className="flex items-center gap-4 mt-2">
+                                      <span className="text-sm text-gray-500">
+                                        <Clock className="w-4 h-4 inline mr-1" />
+                                        {service.duration} min
+                                      </span>
+                                      <span className={`text-sm px-2 py-1 rounded ${service.is_active
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-gray-100 text-gray-800'
+                                        }`}>
+                                        {service.is_active ? 'Active' : 'Inactive'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-lg font-semibold text-gray-900">RM {service.price}</p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="mt-6 flex justify-end">
+                      <button
+                        onClick={() => setCurrentStep(2)}
+                        disabled={selectedServices.length === 0}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Continue
+                      </button>
                     </div>
                   </div>
-                  
-                  {/* Service Center Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="text-xl font-bold text-gray-900">{center.name}</h3>
-                          <Badge className={`text-xs font-semibold px-2 py-1 ${getTypeColor(center.type)}`}>
-                            {center.type}
-                          </Badge>
-                        </div>
-                        <p className="text-gray-600 mb-1">{center.location}</p>
-                        <p className="text-sm text-gray-500 mb-2">{center.address}</p>
-                        
-                        {/* Rating and Distance */}
-                        <div className="flex items-center gap-4 text-sm">
-                          <div className="flex items-center gap-1">
-                            <Star size={14} className="text-yellow-400 fill-current" />
-                            <span className="font-medium text-gray-900">{center.rating}</span>
+                )}
+
+                {/* Step 2: Vehicle Selection */}
+                {currentStep === 2 && (
+                  <div className="bg-white rounded-2xl p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Select Vehicle</h2>
+                    <div className="space-y-4">
+                      {userVehicles.map((vehicle: Vehicle) => (
+                        <div
+                          key={vehicle.id}
+                          onClick={() => setSelectedVehicle(vehicle)}
+                          className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedVehicle?.id === vehicle.id
+                            ? 'border-blue-600 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="p-3 bg-gray-100 rounded-full">
+                              <Car className="w-6 h-6 text-gray-600" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-medium text-gray-900">
+                                {vehicle.year} {vehicle.license_plate}
+                              </h3>
+                              <p className="text-sm text-gray-600">
+                                {vehicle.license_plate} • {vehicle.color}
+                              </p>
+                            </div>
+                            <div className={`w-5 h-5 rounded-full border-2 ${selectedVehicle?.id === vehicle.id
+                              ? 'border-blue-600 bg-blue-600'
+                              : 'border-gray-300'
+                              }`}>
+                              {selectedVehicle?.id === vehicle.id && (
+                                <Check className="w-3 h-3 text-white m-0.5" />
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <MapPin size={14} className="text-gray-400" />
-                            <span className="text-gray-600">{center.distance}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Phone size={14} className="text-gray-400" />
-                            <span className="text-gray-600">{center.phone}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Services */}
-                    <div className="mb-3">
-                      <div className="flex flex-wrap gap-1">
-                        {center.services.slice(0, 3).map((service, index) => (
-                          <span key={index} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                            {service}
-                          </span>
-                        ))}
-                        {center.services.length > 3 && (
-                          <span className="text-xs text-gray-500">+{center.services.length - 3} more</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Availability and Action */}
-                  <div className="flex-shrink-0 text-right">
-                    <div className="space-y-2 mb-4">
-                      {center.availability.map((slot, index) => (
-                        <div key={index} className="flex items-center justify-end gap-2 text-sm">
-                          <div className={`w-2 h-2 rounded-full ${slot.available ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                          <span className="text-gray-600">{slot.date}</span>
                         </div>
                       ))}
                     </div>
-                    
-                    <Button 
-                      onClick={() => handleSelectCenter(center.id)}
-                      className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-                    >
-                      Select Office
-                    </Button>
+                    <div className="mt-6 flex justify-between">
+                      <button
+                        onClick={() => setCurrentStep(1)}
+                        className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={() => setCurrentStep(3)}
+                        disabled={!selectedVehicle}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Continue
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+                )}
 
-      {/* Footer Actions */}
-      <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-        <Button variant="outline" onClick={() => router.back()}>
-          Cancel
-        </Button>
-        <div className="text-sm text-gray-500">
-                     Can&apos;t find what you&apos;re looking for? <button className="text-blue-600 hover:text-blue-700 font-medium">Contact support</button>
-        </div>
+                {/* Step 3: Date & Time Selection */}
+                {currentStep === 3 && (
+                  <div className="bg-white rounded-2xl p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Select Date & Time</h2>
+
+                    {/* Date Selection */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Preferred Date
+                      </label>
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+
+                    {/* Time Selection */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Preferred Time
+                      </label>
+                      <div className="grid grid-cols-4 gap-3">
+                        {availableTimes.map((time: string) => (
+                          <button
+                            key={time}
+                            onClick={() => setSelectedTime(time)}
+                            className={`p-3 text-sm rounded-lg border transition-colors ${selectedTime === time
+                              ? 'border-blue-600 bg-blue-50 text-blue-600'
+                              : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                          >
+                            {time}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex justify-between">
+                      <button
+                        onClick={() => setCurrentStep(2)}
+                        className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        Back
+                      </button>
+                      <button
+                        onClick={() => setCurrentStep(4)}
+                        disabled={!selectedDate || !selectedTime}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 4: Review & Confirm */}
+                {currentStep === 4 && (
+                  <div className="bg-white rounded-2xl p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Review Appointment</h2>
+
+                    {/* Selected Services */}
+                    <div className="mb-6">
+                      <h3 className="font-medium text-gray-900 mb-3">Selected Services</h3>
+                      <div className="space-y-2">
+                        {selectedServices.map((service: Service) => (
+                          <div key={service.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                            <div>
+                              <p className="font-medium text-gray-900">{service.name}</p>
+                              <p className="text-sm text-gray-600">{service.duration} minutes</p>
+                            </div>
+                            <p className="font-medium text-gray-900">RM {service.price}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Selected Vehicle */}
+                    <div className="mb-6">
+                      <h3 className="font-medium text-gray-900 mb-3">Vehicle</h3>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="font-medium text-gray-900">
+                          {selectedVehicle?.year} {selectedVehicle?.license_plate}
+                        </p>
+                        <p className="text-sm text-gray-600">{selectedVehicle?.color}</p>
+                      </div>
+                    </div>
+
+                    {/* Date & Time */}
+                    <div className="mb-6">
+                      <h3 className="font-medium text-gray-900 mb-3">Appointment Details</h3>
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="font-medium text-gray-900">{selectedDate} at {selectedTime}</p>
+                        <p className="text-sm text-gray-600">Total duration: {getTotalDuration()} minutes</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex justify-between">
+                      <button
+                        onClick={() => setCurrentStep(3)}
+                        className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        Back
+                      </button>
+                      <DefaultButton isLoading={isCreatingAppointment} handleSubmit={handleSubmit}>
+                        Book Appointment
+                      </DefaultButton>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-6">
+                {/* Service Center Info */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm">
+                  {serviceCenter && (
+                    <>
+                      <img
+                        src={serviceCenter.image}
+                        alt={serviceCenter.name}
+                        className="w-full h-32 object-cover rounded-lg mb-4"
+                      />
+                      <h3 className="font-semibold text-gray-900 mb-3">{serviceCenter.name}</h3>
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4" />
+                          <span>{serviceCenter.locations?.address}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4" />
+                          <span>{serviceCenter.phone}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4" />
+                          <span>{serviceCenter.email}</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Order Summary */}
+                {selectedServices.length > 0 && (
+                  <div className="bg-white rounded-2xl p-6 shadow-sm">
+                    <h3 className="font-semibold text-gray-900 mb-4">Order Summary</h3>
+                    <div className="space-y-3">
+                      {selectedServices.map((service: Service) => (
+                        <div key={service.id} className="flex justify-between text-sm">
+                          <span className="text-gray-600">{service.name}</span>
+                          <span className="font-medium">RM {service.price}</span>
+                        </div>
+                      ))}
+                      <div className="border-t pt-3">
+                        <div className="flex justify-between font-semibold">
+                          <span>Total</span>
+                          <span>RM {getTotalPrice()}</span>
+                        </div>
+                        <div className="flex justify-between text-sm text-gray-600 mt-1">
+                          <span>Total Duration</span>
+                          <span>{getTotalDuration()} minutes</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
-  )
-} 
+  );
+};
+
+export default CreateAppointmentPage;

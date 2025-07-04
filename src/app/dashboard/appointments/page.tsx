@@ -13,102 +13,31 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useRouter } from "next/navigation"
+import { useGetAppointments } from "@/lib/tanstack/appoinment-tanstack"
+import { Appointment } from "@/types/appointment"
 
-// Mock data for appointments
-const appointments = [
-  {
-    id: "1",
-    date: "2024-01-15",
-    time: "10:00 AM",
-    service: "Oil Change & Basic Maintenance",
-    vehicle: "Toyota Camry 2020",
-    serviceCenter: "AutoCare Plus",
-    location: "Kuala Lumpur",
-    status: "confirmed",
-    price: "RM 150",
-    phone: "+60 12-345-6789"
-  },
-  {
-    id: "2", 
-    date: "2024-01-18",
-    time: "2:30 PM",
-    service: "Brake Inspection & Repair",
-    vehicle: "Honda Civic 2019",
-    serviceCenter: "SpeedFix Workshop",
-    location: "Petaling Jaya",
-    status: "pending",
-    price: "RM 280",
-    phone: "+60 11-987-6543"
-  },
-  {
-    id: "3",
-    date: "2024-01-12",
-    time: "9:00 AM", 
-    service: "Air Conditioning Service",
-    vehicle: "Toyota Camry 2020",
-    serviceCenter: "CoolCar Services",
-    location: "Shah Alam",
-    status: "completed",
-    price: "RM 120",
-    phone: "+60 13-456-7890"
-  },
-  {
-    id: "4",
-    date: "2024-01-20",
-    time: "11:30 AM",
-    service: "Tire Replacement",
-    vehicle: "Honda Civic 2019", 
-    serviceCenter: "TireMax Center",
-    location: "Subang Jaya",
-    status: "cancelled",
-    price: "RM 400",
-    phone: "+60 12-678-9012"
+
+
+const getStatusColor = (status: string): string => {
+  const colors = {
+    pending: 'bg-yellow-100 text-yellow-800',
+    confirmed: 'bg-green-100 text-green-800',
+    completed: 'bg-blue-100 text-blue-800',
+    cancelled: 'bg-red-100 text-red-800',
   }
-]
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "confirmed":
-      return "bg-green-100 text-green-800 hover:bg-green-200"
-    case "pending":
-      return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-    case "completed":
-      return "bg-blue-100 text-blue-800 hover:bg-blue-200"
-    case "cancelled":
-      return "bg-red-100 text-red-800 hover:bg-red-200"
-    default:
-      return "bg-gray-100 text-gray-800 hover:bg-gray-200"
-  }
-}
-
-interface Appointment {
-  id: string
-  date: string
-  time: string
-  service: string
-  vehicle: string
-  serviceCenter: string
-  location: string
-  status: string
-  price: string
-  phone: string
-}
-
-const filterAppointments = (appointments: Appointment[], filter: string) => {
-  if (filter === "all") return appointments
-  return appointments.filter(appointment => appointment.status === filter)
+  return colors[status as keyof typeof colors] || colors.pending
 }
 
 export default function AppointmentsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
 
-  const filteredAppointments = filterAppointments(appointments, activeTab).filter(
-    appointment =>
-      appointment.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.vehicle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.serviceCenter.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const router = useRouter()
+
+  const { data: appointmentsData = [], isLoading } = useGetAppointments({})
+
+  const filteredAppointments = appointmentsData
 
   return (
     <div className="space-y-6">
@@ -118,7 +47,9 @@ export default function AppointmentsPage() {
           <h1 className="text-3xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text">My Appointments</h1>
           <p className="text-gray-600 mt-1">Manage your car service appointments</p>
         </div>
-        <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.3s_forwards] group">
+        <Button
+          onClick={() => router.push('/dashboard/appointments/create')}
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.3s_forwards] group">
           <Calendar className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
           Book New Appointment
         </Button>
@@ -155,11 +86,19 @@ export default function AppointmentsPage() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="opacity-0 animate-[fadeInUp_0.8s_ease-out_0.5s_forwards]">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all">All ({appointments.length})</TabsTrigger>
-          <TabsTrigger value="confirmed">Confirmed ({appointments.filter(a => a.status === "confirmed").length})</TabsTrigger>
-          <TabsTrigger value="pending">Pending ({appointments.filter(a => a.status === "pending").length})</TabsTrigger>
-          <TabsTrigger value="completed">Completed ({appointments.filter(a => a.status === "completed").length})</TabsTrigger>
-          <TabsTrigger value="cancelled">Cancelled ({appointments.filter(a => a.status === "cancelled").length})</TabsTrigger>
+          <TabsTrigger value="all">All ({appointmentsData.length})</TabsTrigger>
+          <TabsTrigger value="confirmed">
+            Confirmed ({appointmentsData.filter((a: Appointment) => a.status === "CONFIRMED").length})
+          </TabsTrigger>
+          <TabsTrigger value="pending">
+            Pending ({appointmentsData.filter((a: Appointment) => a.status === "PENDING").length})
+          </TabsTrigger>
+          <TabsTrigger value="completed">
+            Completed ({appointmentsData.filter((a: Appointment) => a.status === "COMPLETED").length})
+          </TabsTrigger>
+          <TabsTrigger value="cancelled">
+            Cancelled ({appointmentsData.filter((a: Appointment) => a.status === "CANCELLED").length})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-6">
@@ -181,19 +120,19 @@ export default function AppointmentsPage() {
             </Card>
           ) : (
             <div className="grid gap-6">
-              {filteredAppointments.map((appointment, index) => (
-                <Card 
-                  key={appointment.id} 
+              {filteredAppointments.map((appointment: Appointment, index: number) => (
+                <Card
+                  key={appointment.id}
                   className="hover:shadow-xl hover:scale-[1.01] transition-all duration-300 border-l-4 border-l-transparent hover:border-l-blue-500 opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards] group"
                   style={{ animationDelay: `${0.6 + (index * 0.1)}s` }}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="text-lg">{appointment.service}</CardTitle>
+                        <CardTitle className="text-lg">{appointment.service_center?.name}</CardTitle>
                         <CardDescription className="flex items-center mt-1">
                           <Car className="h-4 w-4 mr-1" />
-                          {appointment.vehicle}
+                          {appointment.vehicle?.name}
                         </CardDescription>
                       </div>
                       <Badge className={`${getStatusColor(appointment.status)} transition-all duration-300 hover:scale-105`}>
@@ -210,7 +149,7 @@ export default function AppointmentsPage() {
                           <p className="text-xs text-gray-500">Date</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center text-gray-600">
                         <Clock className="h-4 w-4 mr-2 text-green-500" />
                         <div>
@@ -218,26 +157,26 @@ export default function AppointmentsPage() {
                           <p className="text-xs text-gray-500">Time</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center text-gray-600">
                         <MapPin className="h-4 w-4 mr-2 text-red-500" />
                         <div>
-                          <p className="font-medium">{appointment.serviceCenter}</p>
-                          <p className="text-xs text-gray-500">{appointment.location}</p>
+                          <p className="font-medium">{appointment.service_center?.name}</p>
+                          <p className="text-xs text-gray-500">{appointment.service_center?.locations?.city}, {appointment.service_center?.locations?.state}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center text-gray-600">
                         <Phone className="h-4 w-4 mr-2 text-purple-500" />
                         <div>
-                          <p className="font-medium">{appointment.price}</p>
+                          <p className="font-medium">{appointment.items.reduce((acc, item) => acc + item.price, 0)}</p>
                           <p className="text-xs text-gray-500">Price</p>
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-end space-x-2 mt-4 pt-4 border-t">
-                      {appointment.status === "confirmed" && (
+                      {appointment.status === "CONFIRMED" && (
                         <>
                           <Button variant="outline" size="sm">
                             Reschedule
@@ -247,12 +186,12 @@ export default function AppointmentsPage() {
                           </Button>
                         </>
                       )}
-                      {appointment.status === "pending" && (
+                      {appointment.status === "PENDING" && (
                         <Button variant="outline" size="sm">
                           View Details
                         </Button>
                       )}
-                      {appointment.status === "completed" && (
+                      {appointment.status === "COMPLETED" && (
                         <Button variant="outline" size="sm">
                           Book Again
                         </Button>

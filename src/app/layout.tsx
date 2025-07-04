@@ -7,6 +7,7 @@ import AuthProvider from "@/lib/provider/auth-provider";
 import TanstackQueryClientProvider from "@/lib/provider/tanstack-query-client-provider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { GOOGLE_CLIENT_ID } from "@/lib/constant";
+import ProtectedLayout from "@/components/protected-layout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,18 +34,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <TanstackQueryClientProvider>
-            <UserProvider>
-              <GoogleOAuthProvider
-                
-                clientId={GOOGLE_CLIENT_ID}>
+        <TanstackQueryClientProvider>
+          <UserProvider>
+            <GoogleOAuthProvider
+
+              clientId={GOOGLE_CLIENT_ID}>
+              <ProtectedLayout>
                 {children}
-              </GoogleOAuthProvider>
-            </UserProvider>
-          </TanstackQueryClientProvider>
-          <Toaster />
-        </AuthProvider>
+              </ProtectedLayout>
+            </GoogleOAuthProvider>
+          </UserProvider>
+        </TanstackQueryClientProvider>
+        <Toaster />
       </body>
     </html>
   );
