@@ -1,12 +1,16 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Clock, CheckCircle2, MapPin, ArrowLeft } from 'lucide-react'
-import { addDays, format, isAfter, isBefore } from 'date-fns'
+import { CheckCircle2, MapPin, ArrowLeft, Car, Wrench, Calendar as CalendarIcon } from 'lucide-react'
+import { addDays, format, isAfter, isBefore, parseISO } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Calendar } from '@/components/ui/calendar'
 import { Button } from '@/components/ui/button'
+import { useGetAppointmentById, useUpdateAppointment } from '@/lib/tanstack/appoinment-tanstack'
+import { toast } from 'sonner'
+import DefaultButton from '@/components/default-button'
+import { convertTimeTo24h } from '@/lib/helper'
 
 const timeSlots = [
   { time: '09:00 AM', available: true },
@@ -22,25 +26,71 @@ const timeSlots = [
 export default function ReschedulePage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  
-  // Get parameters from URL
-  const currentDate = searchParams.get('currentDate') || '2025-07-15'
-  const currentTime = searchParams.get('currentTime') || '10:00 AM'
-  const serviceName = searchParams.get('serviceName') || 'Premium Service Package'
-  const vehicleName = searchParams.get('vehicleName') || '2023 Tesla Model S'
-  const location = searchParams.get('location') || 'Tesla Service Center - Downtown'
+  const [appointmentId, setAppointmentId] = useState<string | null>(null)
+  const { data: appointment, isLoading: isLoadingAppointment } = useGetAppointmentById(appointmentId || '')
+  const { mutate: updateAppointment, isPending: isUpdatingAppointment } = useUpdateAppointment()
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    appointment?.date ? parseISO(appointment.date) : undefined
+  )
+  const [selectedTime, setSelectedTime] = useState(appointment?.time || '')
 
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date(currentDate))
-  const [selectedTime, setSelectedTime] = useState(currentTime)
-  const [isLoading, setIsLoading] = useState(false)
-  
+  useEffect(() => {
+    const appointmentId = searchParams.get('appointment_id')
+    if (appointmentId) {
+      setAppointmentId(appointmentId)
+    }
+  }, [searchParams])
   const handleConfirm = async () => {
-    setIsLoading(true)
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    setIsLoading(false)
-    // Navigate back to vehicles page
-    router.push('/dashboard/vehicles')
+    if (!selectedDate || !selectedTime) {
+      toast.error('Please select a date and time')
+      return
+    }
+    try {
+      const formattedDate = format(selectedDate || new Date(), 'yyyy-MM-dd')
+      const formattedTime = convertTimeTo24h(selectedTime)
+
+      const payload = {
+        date: formattedDate,
+        time: formattedTime,
+        service_center_id: appointment?.service_center_id,
+        user_id: appointment?.user_id,
+      }
+
+      updateAppointment({
+        id: appointmentId || '',
+        appointment: payload
+      })
+    } catch (error) {
+      toast.error('Failed to reschedule appointment due to ' + error)
+    }
+  }
+
+  if (isLoadingAppointment) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin"></div>
+          <span className="text-gray-600">Loading appointment details...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!appointment) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900">Appointment Not Found</h2>
+          <p className="text-gray-600 mt-2">The appointment you're looking for doesn't exist.</p>
+          <Button
+            onClick={() => router.push('/dashboard/vehicles')}
+            className="mt-4"
+          >
+            Go Back to Vehicles
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -49,41 +99,79 @@ export default function ReschedulePage() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => router.back()}
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
             >
               <ArrowLeft size={20} />
-              <span>Back to Vehicles</span>
+              <span>Back</span>
             </button>
           </div>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Reschedule Appointment</h1>
-          <p className="text-gray-600">Choose a new date and time for your service appointment</p>
-        </div>
+        {/* Appointment Summary Card */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+          <h1 className="text-xl font-semibold text-gray-900 mb-6">Appointment Details</h1>
 
-        {/* Current Appointment Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
-          <div className="flex items-center gap-3">
-            <Clock size={20} className="text-blue-600" />
-            <div>
-              <p className="font-medium text-blue-900">Current Appointment</p>
-              <p className="text-blue-700">
-                {format(new Date(currentDate), 'EEEE, MMMM dd, yyyy')} at {currentTime}
-              </p>
-              <p className="text-sm text-blue-600 mt-1">{vehicleName} • {serviceName}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Left Column */}
+            <div className="space-y-6">
+              <div className="flex items-start gap-3">
+                <Car className="w-5 h-5 text-gray-500 mt-1" />
+                <div>
+                  <p className="text-sm text-gray-500">Vehicle</p>
+                  <p className="text-gray-900 font-medium">{appointment.vehicle?.name || 'Vehicle'}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Wrench className="w-5 h-5 text-gray-500 mt-1" />
+                <div>
+                  <p className="text-sm text-gray-500">Service</p>
+                  <p className="text-gray-900">{appointment.items?.[0]?.service?.name || 'Service'}</p>
+                  {appointment.items && appointment.items.length > 1 && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      +{appointment.items.length - 1} additional services
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-6">
+              <div className="flex items-start gap-3">
+                <CalendarIcon className="w-5 h-5 text-gray-500 mt-1" />
+                <div>
+                  <p className="text-sm text-gray-500">Current Schedule</p>
+                  <p className="text-gray-900">{format(parseISO(appointment.date), 'EEEE, MMMM dd, yyyy')}</p>
+                  <p className="text-gray-900">{appointment.time}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <MapPin className="w-5 h-5 text-gray-500 mt-1" />
+                <div>
+                  <p className="text-sm text-gray-500">Location</p>
+                  <p className="text-gray-900">{appointment.service_center?.name || 'Service Center'}</p>
+                  <p className="text-sm text-gray-500 mt-1">{appointment.service_center?.address || ''}</p>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Select New Schedule</h2>
+          <p className="text-gray-600">Choose a new date and time for your service appointment</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Calendar Section */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Select Date</h2>
+            <h3 className="text-base font-medium text-gray-900 mb-4">Select Date</h3>
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -118,7 +206,7 @@ export default function ReschedulePage() {
 
           {/* Time Selection */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Select Time</h2>
+            <h3 className="text-base font-medium text-gray-900 mb-4">Select Time</h3>
             <div className="space-y-2">
               {timeSlots.map((slot) => (
                 <button
@@ -147,63 +235,26 @@ export default function ReschedulePage() {
           </div>
         </div>
 
-        {/* Appointment Summary */}
-        {selectedDate && selectedTime && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mt-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Appointment Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date & Time</label>
-                  <p className="text-gray-900 font-medium">
-                    {format(selectedDate, 'EEEE, MMMM dd, yyyy')} at {selectedTime}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
-                  <p className="text-gray-900">{serviceName}</p>
-                </div>
-              </div>
-              <div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle</label>
-                  <p className="text-gray-900">{vehicleName}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                  <p className="text-gray-900 flex items-center gap-2">
-                    <MapPin size={16} className="text-gray-500" />
-                    {location}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Action Buttons */}
         <div className="flex justify-end gap-3 mt-8">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => router.back()}
             className="px-6"
           >
             Cancel
           </Button>
-          <Button 
-            onClick={handleConfirm}
-            disabled={!selectedDate || !selectedTime || isLoading}
-            className="px-6 bg-blue-600 hover:bg-blue-700 text-white"
+          <DefaultButton
+            isLoading={isUpdatingAppointment}
+            handleSubmit={handleConfirm}
+            props={{
+              disabled: !selectedDate || !selectedTime || isUpdatingAppointment,
+              className: "px-6 bg-blue-600 hover:bg-blue-700 text-white"
+            }}
           >
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Confirming...
-              </div>
-            ) : (
-              'Confirm Reschedule'
-            )}
-          </Button>
+            Confirm Reschedule
+          </DefaultButton>
+
         </div>
       </div>
     </div>

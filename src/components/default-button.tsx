@@ -5,9 +5,10 @@ interface DefaultButtonProps {
     isLoading: boolean;
     handleSubmit: () => void;
     children: React.ReactNode;
+    props?: React.ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
-const DefaultButton = ({ isLoading, handleSubmit, children }: DefaultButtonProps) => {
+const DefaultButton = ({ isLoading, handleSubmit, children, ...props }: DefaultButtonProps) => {
     return (
         <Button
             disabled={isLoading}

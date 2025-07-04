@@ -24,14 +24,7 @@ export const useAuthTanstack = () => {
                     setUser(parsedUser);
                     setIsAuthenticated(true);
 
-                    // // Verify token is still valid
-                    // const profile = await getur(parsedUser.accessToken);
-                    // if (profile) {
-                    //     // Update user data if needed
-                    //     const updatedUser = { ...parsedUser, ...profile };
-                    //     setUser(updatedUser);
-                    //     localStorage.setItem('user', JSON.stringify(updatedUser));
-                    // }
+
                     localStorage.setItem('user', JSON.stringify(parsedUser));
                 }
             } catch (error) {
@@ -63,10 +56,9 @@ export const useAuthTanstack = () => {
                             id: authResponse.user_id,
                             email: authResponse.email,
                             name: authResponse.email.split('@')[0],
-                            backend_tokens: {
-                                access_token: authResponse.backend_tokens.access_token,
-                                refresh_token: authResponse.backend_tokens.refresh_token,
-                            }
+                            accessToken: authResponse.backend_tokens.access_token,
+                            refreshToken: authResponse.backend_tokens.refresh_token,
+
                         };
 
                         setUser(userData as unknown as User);
@@ -117,10 +109,9 @@ export const useAuthTanstack = () => {
                 const userData = {
                     id: data.user_id,
                     email: data.email,
-                    backend_tokens: {
-                        access_token: data.backend_tokens.access_token,
-                        refresh_token: data.backend_tokens.refresh_token,
-                    }
+                    name: data.email.split('@')[0],
+                    accessToken: data.backend_tokens.access_token,
+                    refreshToken: data.backend_tokens.refresh_token,
                 };
 
                 setUser(userData as unknown as User);

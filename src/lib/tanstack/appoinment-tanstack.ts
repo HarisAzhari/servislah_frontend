@@ -31,6 +31,7 @@ export const useCreateAppointment = () => {
 
 export const useUpdateAppointment = () => {
     const { user } = useAuthTanstack()
+    const router = useRouter()
 
     return useMutation({
         mutationFn: async (variables: { id: string, appointment: UpdateAppointmentRequest }) => {
@@ -42,6 +43,7 @@ export const useUpdateAppointment = () => {
         },
         onSuccess: () => {
             toast.success('Appointment updated successfully');
+            router.push('/dashboard/appointments');
         },
         onError: () => {
             toast.error('Failed to update appointment');

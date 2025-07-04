@@ -1,16 +1,17 @@
 import { Mechanic, ServiceCenter } from "./service-center"
+import { Vehicle } from "./vehicle"
 
 export interface Appointment {
   id: string
   service_center_id: string
   user_id: string
   vehicle_id: string
-  mechanic_id?: string
+  vehicle?: Vehicle
+  mechanic_id?: string,
+  mechanic?: Mechanic | null,
   service_bay_id?: string
   service_center?: ServiceCenter | null
   user?: any
-  vehicle?: any
-  mechanic?: Mechanic | null
   service_bay?: any
   date: string
   time: string
@@ -61,7 +62,7 @@ export interface UpdateAppointmentRequest {
   vehicle_id?: string,
   date?: string,
   time?: string,
-  items: {
+  items?: {
     service_id: string
   }[]
 }
