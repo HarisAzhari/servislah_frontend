@@ -106,12 +106,12 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-sm opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards]">
+    <Card className="w-full max-w-md mx-auto shadow-xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards] dark:border-gray-700">
       <CardHeader className="space-y-1 opacity-0 animate-[fadeInDown_0.6s_ease-out_0.2s_forwards]">
-        <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text">
+        <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-gray-900 dark:from-white to-blue-600 dark:to-blue-400 bg-clip-text">
           Welcome Back
         </CardTitle>
-        <CardDescription className="text-center">
+        <CardDescription className="text-center text-gray-600 dark:text-gray-300">
           Enter your credentials to access your account
         </CardDescription>
       </CardHeader>
@@ -123,11 +123,12 @@ export function LoginForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="text-gray-900 dark:text-gray-100">Email</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
                       placeholder="Enter your email"
+                      className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                       {...field}
                       disabled={isLoading}
                     />
@@ -143,10 +144,10 @@ export function LoginForm() {
               render={({ field }) => (
                 <FormItem>
                   <div className="flex items-center justify-between">
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="text-gray-900 dark:text-gray-100">Password</FormLabel>
                     <Link
                       href="/forgot-password"
-                      className="text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-300"
+                      className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium hover:underline transition-colors duration-300"
                     >
                       Forgot password?
                     </Link>
@@ -156,12 +157,13 @@ export function LoginForm() {
                       <Input
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
+                        className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                         {...field}
                         disabled={isLoading}
                       />
                       <button
                         type="button"
-                        className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                        className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? (
@@ -178,14 +180,14 @@ export function LoginForm() {
             />
 
             {error && (
-              <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+              <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 p-3 rounded-md">
                 {error}
               </div>
             )}
 
             <Button
               type="button"
-              className="w-full bg-white text-black border border-gray-300 hover:bg-gray-50"
+              className="w-full bg-white dark:bg-gray-800 text-black dark:text-gray-100 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
               disabled={loginWithGoogleMutation.isPending}
               onClick={() => loginWithGoogleMutation.mutate()}
             >
@@ -225,11 +227,11 @@ export function LoginForm() {
               )}
             </Button>
 
-            <div className="text-center text-sm text-gray-600">
+            <div className="text-center text-sm text-gray-600 dark:text-gray-400">
               Don&apos;t have an account?{" "}
               <Link
                 href="/signup"
-                className="text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-300"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium hover:underline transition-colors duration-300"
               >
                 Sign up
               </Link>

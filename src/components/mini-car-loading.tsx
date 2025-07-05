@@ -10,9 +10,7 @@ export const MiniCarLoading: React.FC<MiniCarLoadingProps> = ({ className = "" }
   return (
     <div className={`relative w-8 h-4 ${className}`}>
       {/* Mini road */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-300 rounded-full overflow-hidden">
-        <div className="h-full w-full bg-gradient-to-r from-transparent via-white to-transparent opacity-60 animate-[roadShine_1s_linear_infinite]"></div>
-      </div>
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
 
       {/* Mini car */}
       <div className="absolute top-0 left-0 animate-[miniCarMove_1.5s_linear_infinite]">
@@ -34,19 +32,14 @@ export const MiniCarLoading: React.FC<MiniCarLoadingProps> = ({ className = "" }
           <path d="M5.5 2.5 L10.5 2.5 L11.5 3.5 L4.5 3.5 L5.5 2.5 Z" fill="#87CEEB" opacity="0.8" />
           
           {/* Wheels */}
-          <circle cx="11" cy="7.5" r="1.5" fill="#2D3748" className="animate-[wheelSpin_0.2s_linear_infinite]" />
-          <circle cx="5" cy="7.5" r="1.5" fill="#2D3748" className="animate-[wheelSpin_0.2s_linear_infinite]" />
+          <circle cx="11" cy="7.5" r="1.5" fill="#2D3748" />
+          <circle cx="5" cy="7.5" r="1.5" fill="#2D3748" />
           <circle cx="11" cy="7.5" r="0.8" fill="#4A5568" />
           <circle cx="5" cy="7.5" r="0.8" fill="#4A5568" />
           
           {/* Headlight */}
-          <circle cx="14" cy="5" r="0.8" fill="#FBBF24" className="animate-[headlightPulse_1s_ease-in-out_infinite]" />
+          <circle cx="14" cy="5" r="0.8" fill="#FBBF24" />
         </svg>
-      </div>
-
-      {/* Exhaust smoke */}
-      <div className="absolute top-1 -right-1">
-        <div className="w-1 h-1 bg-gray-400 rounded-full opacity-50 animate-[miniSmoke_1s_ease-out_infinite]"></div>
       </div>
 
 

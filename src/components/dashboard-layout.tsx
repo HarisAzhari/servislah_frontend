@@ -395,7 +395,11 @@ const DashboardLayoutContent: React.FC<DashboardLayoutContentProps> = ({
           <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200/50 dark:border-gray-700/50 relative">
             <div className={`flex items-center space-x-3 group transition-all duration-300 ${isSidebarCollapsed ? 'lg:justify-center' : ''}`}>
               <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md group-hover:shadow-lg transition-all duration-300">
-                <Car className="h-5 w-5 text-white" />
+                <img
+                  src="/Main Logo.png"
+                  alt="ServisLah"
+                  className="h-5 w-5 object-contain"
+                />
               </div>
               <span className={`text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300 ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>ServisLah</span>
             </div>
