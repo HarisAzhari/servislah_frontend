@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "@/contexts/UserContext";
+import { DarkModeProvider } from "@/contexts/DarkModeContext";
 import { Toaster } from "sonner";
 import AuthProvider from "@/lib/provider/auth-provider";
 import TanstackQueryClientProvider from "@/lib/provider/tanstack-query-client-provider";
@@ -34,17 +35,19 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <TanstackQueryClientProvider>
-          <UserProvider>
-            <GoogleOAuthProvider
+        <DarkModeProvider>
+          <TanstackQueryClientProvider>
+            <UserProvider>
+              <GoogleOAuthProvider
 
-              clientId={GOOGLE_CLIENT_ID}>
-              <ProtectedLayout>
-                {children}
-              </ProtectedLayout>
-            </GoogleOAuthProvider>
-          </UserProvider>
-        </TanstackQueryClientProvider>
+                clientId={GOOGLE_CLIENT_ID}>
+                <ProtectedLayout>
+                  {children}
+                </ProtectedLayout>
+              </GoogleOAuthProvider>
+            </UserProvider>
+          </TanstackQueryClientProvider>
+        </DarkModeProvider>
         <Toaster />
       </body>
     </html>

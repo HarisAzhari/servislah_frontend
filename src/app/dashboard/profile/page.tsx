@@ -126,19 +126,19 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900/50">
       <div className="space-y-8">
         {/* Enhanced Header */}
         <div className="opacity-0 animate-[fadeInUp_0.8s_ease-out_forwards]">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-[#363DFF] via-purple-600 to-indigo-600 bg-clip-text text-transparent">
             My Profile
           </h1>
-          <p className="text-gray-700 mt-2 text-lg font-medium">Manage your account and personal information 💖</p>
+          <p className="text-gray-700 dark:text-gray-300 mt-2 text-lg font-medium">Manage your account and personal information 💖</p>
         </div>
 
       {/* Enhanced Profile Card */}
-      <Card className="opacity-0 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards] shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200/60 bg-white">
-        <CardHeader className="pb-6 border-b border-gray-100">
+      <Card className="opacity-0 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards] shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200/60 dark:border-gray-700/60 bg-white dark:bg-gray-900">
+        <CardHeader className="pb-6 border-b border-gray-100 dark:border-gray-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6">
               <div className="relative">
@@ -151,14 +151,14 @@ export default function ProfilePage() {
                 <Button
                   size="icon"
                   variant="outline"
-                  className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                  className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
                 >
                   <Camera className="h-5 w-5" />
                 </Button>
               </div>
               <div className="space-y-2">
-                <CardTitle className="text-3xl font-bold">{displayName}</CardTitle>
-                <CardDescription className="text-lg">{user.email}</CardDescription>
+                <CardTitle className="text-3xl font-bold dark:text-white">{displayName}</CardTitle>
+                <CardDescription className="text-lg dark:text-gray-300">{user.email}</CardDescription>
                 <div className="flex items-center gap-3">
                   {getRoleBadge()}
                   {getStatusBadge()}
@@ -237,9 +237,9 @@ export default function ProfilePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-base font-semibold text-gray-700">Email Address</label>
-                  <Input value={user.email} disabled className="mt-2 h-12 bg-gray-50" />
-                  <p className="text-sm text-gray-500 mt-2">📧 Email cannot be changed</p>
+                  <label className="text-base font-semibold text-gray-700 dark:text-gray-300">Email Address</label>
+                  <Input value={user.email} disabled className="mt-2 h-12 bg-gray-50 dark:bg-gray-700 dark:text-white" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">📧 Email cannot be changed</p>
                 </div>
                 <FormField
                   control={form.control}
@@ -283,33 +283,33 @@ export default function ProfilePage() {
       </Card>
 
       {/* Enhanced Account Details */}
-      <Card className="opacity-0 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards] shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200/60 bg-white">
-        <CardHeader className="border-b border-gray-100">
-          <CardTitle className="text-2xl text-gray-800">Account Information</CardTitle>
-          <CardDescription className="text-gray-600 font-medium">Your account details and platform information</CardDescription>
+      <Card className="opacity-0 animate-[fadeInUp_0.8s_ease-out_0.4s_forwards] shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200/60 dark:border-gray-700/60 bg-white dark:bg-gray-900">
+        <CardHeader className="border-b border-gray-100 dark:border-gray-800">
+          <CardTitle className="text-2xl text-gray-800 dark:text-white">Account Information</CardTitle>
+          <CardDescription className="text-gray-600 dark:text-gray-300 font-medium">Your account details and platform information</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-6 bg-gradient-to-br from-[#363DFF]/10 to-indigo-100/50 rounded-xl border border-[#363DFF]/10">
-              <div className="flex items-center justify-center w-12 h-12 bg-[#363DFF]/20 rounded-full mx-auto mb-3">
+            <div className="text-center p-6 bg-gradient-to-br from-[#363DFF]/10 to-indigo-100/50 dark:from-[#363DFF]/20 dark:to-indigo-900/30 rounded-xl border border-[#363DFF]/10 dark:border-[#363DFF]/20">
+              <div className="flex items-center justify-center w-12 h-12 bg-[#363DFF]/20 dark:bg-[#363DFF]/30 rounded-full mx-auto mb-3">
                 <User className="h-6 w-6 text-[#363DFF]" />
               </div>
-              <p className="text-sm font-medium text-gray-700 mb-1">Account Role</p>
-              <p className="font-bold text-gray-900">{user.role}</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account Role</p>
+              <p className="font-bold text-gray-900 dark:text-white">{user.role}</p>
             </div>
-            <div className="text-center p-6 bg-gradient-to-br from-emerald-50 to-green-100/50 rounded-xl border border-emerald-200/50">
-              <div className="flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-full mx-auto mb-3">
-                <Shield className="h-6 w-6 text-emerald-600" />
+            <div className="text-center p-6 bg-gradient-to-br from-emerald-50 to-green-100/50 dark:from-emerald-900/30 dark:to-green-900/20 rounded-xl border border-emerald-200/50 dark:border-emerald-700/50">
+              <div className="flex items-center justify-center w-12 h-12 bg-emerald-100 dark:bg-emerald-800 rounded-full mx-auto mb-3">
+                <Shield className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <p className="text-sm font-medium text-gray-700 mb-1">Platform</p>
-              <p className="font-bold text-gray-900">{user.platform}</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Platform</p>
+              <p className="font-bold text-gray-900 dark:text-white">{user.platform}</p>
             </div>
-            <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-pink-100/50 rounded-xl border border-purple-200/50">
-              <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-full mx-auto mb-3">
-                <Calendar className="h-6 w-6 text-purple-600" />
+            <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-pink-100/50 dark:from-purple-900/30 dark:to-pink-900/20 rounded-xl border border-purple-200/50 dark:border-purple-700/50">
+              <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-800 rounded-full mx-auto mb-3">
+                <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <p className="text-sm font-medium text-gray-700 mb-1">Member Since</p>
-              <p className="font-bold text-gray-900">{new Date(user.created_at).toLocaleDateString()}</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Member Since</p>
+              <p className="font-bold text-gray-900 dark:text-white">{new Date(user.created_at).toLocaleDateString()}</p>
             </div>
           </div>
 
@@ -317,12 +317,12 @@ export default function ProfilePage() {
 
           {/* Subscription Section - Handle null subscription */}
           <div>
-            <p className="text-lg font-semibold text-gray-700 mb-4">Subscription Status</p>
+            <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Subscription Status</p>
             {!user.subscription ? (
-              <div className="text-center p-8 bg-gradient-to-br from-[#363DFF]/10 to-purple-100/50 rounded-xl border-2 border-dashed border-[#363DFF]/30">
+              <div className="text-center p-8 bg-gradient-to-br from-[#363DFF]/10 to-purple-100/50 dark:from-[#363DFF]/20 dark:to-purple-900/30 rounded-xl border-2 border-dashed border-[#363DFF]/30 dark:border-[#363DFF]/50">
                 <Crown className="h-12 w-12 text-[#363DFF] mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Active Subscription</h3>
-                <p className="text-gray-700 mb-4 font-medium">Upgrade to unlock premium features and exclusive benefits!</p>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Active Subscription</h3>
+                <p className="text-gray-700 dark:text-gray-300 mb-4 font-medium">Upgrade to unlock premium features and exclusive benefits!</p>
                 <Button className="bg-gradient-to-r from-[#363DFF] to-purple-600 hover:from-[#363DFF]/90 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
                   <Crown className="h-4 w-4 mr-2" />
                   Upgrade Now
@@ -331,18 +331,18 @@ export default function ProfilePage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">Type</p>
-                  <p className="font-bold text-lg">{user.subscription.subscription_type}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Type</p>
+                  <p className="font-bold text-lg dark:text-white">{user.subscription.subscription_type}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Status</p>
-                  <p className="font-bold text-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                  <p className="font-bold text-lg dark:text-white">
                     {user.subscription.is_active ? "✅ Active" : "❌ Inactive"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">End Date</p>
-                  <p className="font-bold text-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">End Date</p>
+                  <p className="font-bold text-lg dark:text-white">
                     {new Date(user.subscription.end_date).toLocaleDateString()}
                   </p>
                 </div>
@@ -353,22 +353,22 @@ export default function ProfilePage() {
           <Separator />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex items-center space-x-4 p-5 bg-gradient-to-r from-[#363DFF]/5 to-indigo-50/50 rounded-xl border border-[#363DFF]/10">
-              <div className="flex items-center justify-center w-12 h-12 bg-[#363DFF]/20 rounded-full">
+            <div className="flex items-center space-x-4 p-5 bg-gradient-to-r from-[#363DFF]/5 to-indigo-50/50 dark:from-[#363DFF]/10 dark:to-indigo-900/20 rounded-xl border border-[#363DFF]/10 dark:border-[#363DFF]/20">
+              <div className="flex items-center justify-center w-12 h-12 bg-[#363DFF]/20 dark:bg-[#363DFF]/30 rounded-full">
                 <Calendar className="h-5 w-5 text-[#363DFF]" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 font-medium">Account Created</p>
-                <p className="font-bold text-gray-900">{new Date(user.created_at).toLocaleDateString()}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">Account Created</p>
+                <p className="font-bold text-gray-900 dark:text-white">{new Date(user.created_at).toLocaleDateString()}</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4 p-5 bg-gradient-to-r from-emerald-50/50 to-green-50/50 rounded-xl border border-emerald-200/50">
-              <div className="flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-full">
-                <Clock className="h-5 w-5 text-emerald-600" />
+            <div className="flex items-center space-x-4 p-5 bg-gradient-to-r from-emerald-50/50 to-green-50/50 dark:from-emerald-900/30 dark:to-green-900/20 rounded-xl border border-emerald-200/50 dark:border-emerald-700/50">
+              <div className="flex items-center justify-center w-12 h-12 bg-emerald-100 dark:bg-emerald-800 rounded-full">
+                <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <p className="text-sm text-gray-600 font-medium">Last Updated</p>
-                <p className="font-bold text-gray-900">{new Date(user.updated_at).toLocaleDateString()}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">Last Updated</p>
+                <p className="font-bold text-gray-900 dark:text-white">{new Date(user.updated_at).toLocaleDateString()}</p>
               </div>
             </div>
           </div>

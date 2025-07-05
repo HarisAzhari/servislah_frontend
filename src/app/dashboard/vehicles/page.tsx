@@ -84,8 +84,8 @@ const VehiclesPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Vehicles</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Vehicles</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">
             Manage your vehicles and their details
           </p>
         </div>
@@ -99,18 +99,18 @@ const VehiclesPage = () => {
       </div>
 
       {/* Stats Card */}
-      <Card>
-        <CardContent className="p-6">
+      <Card className="dark:bg-gray-800 dark:border-gray-700">
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
                 Total Vehicles
               </p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xl font-bold text-gray-900 dark:text-white">
                 {totalVehicles}
               </p>
             </div>
-            <Car className="w-8 h-8 text-blue-600" />
+            <Car className="w-6 h-6 text-blue-600" />
           </div>
         </CardContent>
       </Card>
@@ -130,10 +130,10 @@ const VehiclesPage = () => {
       {filteredVehicles.length === 0 ? (
         <div className="text-center py-12">
           <Car className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             {searchTerm ? "No vehicles found" : "No vehicles yet"}
           </h3>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {searchTerm
               ? "Try adjusting your search terms"
               : "No vehicles to display"}
@@ -144,7 +144,7 @@ const VehiclesPage = () => {
           {filteredVehicles.map((vehicle: Vehicle) => (
             <Card
               key={vehicle.id}
-              className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
+              className="overflow-hidden hover:shadow-lg transition-shadow duration-300 dark:bg-gray-800 dark:border-gray-700"
             >
               {/* Vehicle Image */}
               <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
@@ -165,10 +165,10 @@ const VehiclesPage = () => {
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       {vehicle.model}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
                       Added {new Date(vehicle.created_at).toLocaleDateString()}
                     </p>
                   </div>
@@ -176,27 +176,27 @@ const VehiclesPage = () => {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-600">Year:</span>
-                      <span className="font-medium">{vehicle.year}</span>
+                      <span className="text-gray-600 dark:text-gray-300">Year:</span>
+                      <span className="font-medium dark:text-white">{vehicle.year}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Hash className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-600">Plate:</span>
-                      <span className="font-medium">
+                      <span className="text-gray-600 dark:text-gray-300">Plate:</span>
+                      <span className="font-medium dark:text-white">
                         {vehicle.license_plate}
                       </span>
                     </div>
                     {vehicle.color && (
                       <div className="flex items-center gap-2">
                         <Palette className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-600">Color:</span>
-                        <span className="font-medium">{vehicle.color}</span>
+                        <span className="text-gray-600 dark:text-gray-300">Color:</span>
+                        <span className="font-medium dark:text-white">{vehicle.color}</span>
                       </div>
                     )}
                     {vehicle.fuel_type && (
                       <div className="flex items-center gap-2">
                         <Fuel className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-600">Fuel:</span>
+                        <span className="text-gray-600 dark:text-gray-300">Fuel:</span>
                         <Badge
                           variant="secondary"
                           className={getFuelTypeColor(vehicle.fuel_type)}

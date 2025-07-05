@@ -13,7 +13,9 @@ import {
   X,
   LogOut,
   Bell,
-  Settings
+  Settings,
+  Moon,
+  Sun
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -28,21 +30,143 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useUser } from "@/contexts/UserContext"
 import { useAuthTanstack } from "@/lib/tanstack/auth-tanstack"
+import { NavigationLoadingProvider, useNavigationLoading } from "@/contexts/NavigationLoadingContext"
+import { MiniCarLoading } from "@/components/mini-car-loading"
+import { useDarkMode } from "@/contexts/DarkModeContext"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
 }
 
 const navigation = [
-  { name: "Appointments", href: "/dashboard/appointments", icon: Calendar },
-  { name: "Vehicles", href: "/dashboard/vehicles", icon: Car },
-  { name: "Service Centers", href: "/dashboard/service-centers", icon: MapPin },
-  { name: "Profile", href: "/dashboard/profile", icon: User },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  { 
+    name: "Appointments", 
+    href: "/dashboard/appointments", 
+    icon: Calendar,
+    badge: "2",
+    description: "Manage bookings"
+  },
+  { 
+    name: "Vehicles", 
+    href: "/dashboard/vehicles", 
+    icon: Car,
+    badge: null,
+    description: "Your fleet"
+  },
+  { 
+    name: "Service Centers", 
+    href: "/dashboard/service-centers", 
+    icon: MapPin,
+    badge: null,
+    description: "Find services"
+  },
+  { 
+    name: "Profile", 
+    href: "/dashboard/profile", 
+    icon: User,
+    badge: null,
+    description: "Account details"
+  },
+  { 
+    name: "Settings", 
+    href: "/dashboard/settings", 
+    icon: Settings,
+    badge: null,
+    description: "Preferences"
+  },
 ]
+
+interface NavigationLinkProps {
+  item: {
+    name: string
+    href: string
+    icon: React.ElementType
+    badge?: string | null
+    description?: string
+  }
+  isActive: boolean
+  index: number
+  onMobileMenuClose: () => void
+  isCollapsed?: boolean
+}
+
+const NavigationLink: React.FC<NavigationLinkProps> = ({ item, isActive, index, onMobileMenuClose, isCollapsed = false }) => {
+  const { loadingNavItem, setLoadingNavItem } = useNavigationLoading()
+  const isThisItemLoading = loadingNavItem === item.href
+  
+  const handleClick = () => {
+    // Only show loading if we're navigating to a different page
+    if (!isActive) {
+      setLoadingNavItem(item.href)
+    }
+    onMobileMenuClose()
+  }
+  
+  if (isCollapsed) {
+    return (
+      <div className="relative group">
+        <Link
+          href={item.href}
+          className={`
+            flex items-center justify-center w-12 h-12 rounded-xl text-sm font-medium transition-all duration-300 group relative overflow-hidden mx-auto
+            ${isActive
+              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 scale-105'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 dark:hover:from-gray-800 dark:hover:to-blue-900/50 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-110'
+            }
+          `}
+          onClick={handleClick}
+          style={{ animationDelay: `${index * 100}ms` }}
+        >
+          <item.icon className={`h-5 w-5 transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+          {isThisItemLoading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <MiniCarLoading className="opacity-80" />
+            </div>
+          )}
+        </Link>
+        
+        {/* Tooltip */}
+        <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 bg-gray-900 dark:bg-gray-700 text-white text-sm px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50">
+          {item.name}
+          <div className="absolute left-0 top-1/2 transform -translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45"></div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <Link
+      href={item.href}
+      className={`
+        flex items-center justify-between px-3 py-3 rounded-xl text-sm font-medium transition-all duration-300 group relative overflow-hidden
+        ${isActive
+          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 scale-105'
+          : 'text-gray-600 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 dark:hover:from-gray-800 dark:hover:to-blue-900/50 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-[1.02]'
+        }
+      `}
+      onClick={handleClick}
+      style={{ animationDelay: `${index * 100}ms` }}
+    >
+      <div className="flex items-center">
+        <item.icon className={`h-5 w-5 mr-3 transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+        {isThisItemLoading ? 'Loading' : item.name}
+      </div>
+      
+      <div className="flex items-center">
+        {isActive && !isThisItemLoading && (
+          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+        )}
+        {isThisItemLoading && (
+          <MiniCarLoading className="opacity-80" />
+        )}
+      </div>
+    </Link>
+  )
+}
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const pathname = usePathname()
   // const { user, isLoading: userLoading, logout } = useUser()
@@ -197,14 +321,59 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+    <NavigationLoadingProvider>
+      <DashboardLayoutContent 
+        children={children} 
+        user={user} 
+        displayName={displayName} 
+        userInitials={userInitials}
+        handleLogout={handleLogout}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+        isSidebarCollapsed={isSidebarCollapsed}
+        setIsSidebarCollapsed={setIsSidebarCollapsed}
+        pathname={pathname}
+      />
+    </NavigationLoadingProvider>
+  )
+}
+
+interface DashboardLayoutContentProps {
+  children: React.ReactNode
+  user: any
+  displayName: string
+  userInitials: string
+  handleLogout: () => void
+  isMobileMenuOpen: boolean
+  setIsMobileMenuOpen: (open: boolean) => void
+  isSidebarCollapsed: boolean
+  setIsSidebarCollapsed: (collapsed: boolean) => void
+  pathname: string
+}
+
+const DashboardLayoutContent: React.FC<DashboardLayoutContentProps> = ({
+  children,
+  user,
+  displayName,
+  userInitials,
+  handleLogout,
+  isMobileMenuOpen,
+  setIsMobileMenuOpen,
+  isSidebarCollapsed,
+  setIsSidebarCollapsed,
+  pathname
+}) => {
+  const { isDarkMode, toggleDarkMode } = useDarkMode()
+  
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-900 dark:to-gray-800/30">
       {/* Mobile menu button with better animation */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <Button
           variant="outline"
           size="icon"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="backdrop-blur-sm bg-white/80 border-white/20 hover:bg-white/90 transition-all duration-300 hover:scale-105 active:scale-95"
+          className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80 border-white/20 dark:border-gray-700/20 hover:bg-white/90 dark:hover:bg-gray-900/90 transition-all duration-300 hover:scale-105 active:scale-95"
         >
           <div className="relative w-4 h-4">
             <Menu className={`h-4 w-4 absolute transition-all duration-300 ${isMobileMenuOpen ? 'rotate-90 opacity-0' : 'rotate-0 opacity-100'}`} />
@@ -215,82 +384,92 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Sidebar with enhanced animations - FIXED POSITIONING */}
       <div className={`
-        fixed inset-y-0 left-0 z-40 w-64 bg-white/95 backdrop-blur-xl shadow-xl transform transition-all duration-500 ease-out border-r border-gray-200/50
+        fixed inset-y-0 left-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-xl transform transition-all duration-500 ease-out border-r border-gray-200/50 dark:border-gray-700/50
         ${isMobileMenuOpen ? 'translate-x-0 scale-100' : '-translate-x-full scale-95'}
         lg:translate-x-0 lg:scale-100
+        ${isSidebarCollapsed ? 'lg:w-16' : 'lg:w-64'}
+        w-64
       `}>
         <div className="flex flex-col h-full">
-          {/* Logo with pulse animation */}
-          <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200/50">
-            <div className="flex items-center space-x-2 group">
-              <Car className="h-8 w-8 text-blue-600 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
-              <span className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">ServisLah</span>
+          {/* Clean Professional Logo */}
+          <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200/50 dark:border-gray-700/50 relative">
+            <div className={`flex items-center space-x-3 group transition-all duration-300 ${isSidebarCollapsed ? 'lg:justify-center' : ''}`}>
+              <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-md group-hover:shadow-lg transition-all duration-300">
+                <Car className="h-5 w-5 text-white" />
+              </div>
+              <span className={`text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300 ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>ServisLah</span>
+            </div>
+            
+            {/* Toggle Button */}
+            <button
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="hidden lg:flex absolute -right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full items-center justify-center shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110 group"
+            >
+              <div className={`transition-transform duration-300 ${isSidebarCollapsed ? 'rotate-180' : ''}`}>
+                <svg className="w-3 h-3 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </div>
+            </button>
+          </div>
+
+          {/* Quick Stats */}
+          <div className={`px-4 py-3 border-b border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 ${isSidebarCollapsed ? 'lg:hidden' : ''}`}>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg p-3 text-center">
+                <div className="text-xl font-bold text-blue-600 dark:text-blue-400">2</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Upcoming</div>
+              </div>
+              <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-lg p-3 text-center">
+                <div className="text-xl font-bold text-green-600 dark:text-green-400">3</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Vehicles</div>
+              </div>
             </div>
           </div>
 
-          {/* Navigation with staggered animations */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
+          {/* Clean Navigation */}
+          <nav className={`flex-1 py-6 space-y-2 transition-all duration-300 ${isSidebarCollapsed ? 'px-2' : 'px-4'}`}>
             {navigation.map((item, index) => {
               const isActive = pathname === item.href
               return (
-                <Link
+                <NavigationLink
                   key={item.name}
-                  href={item.href}
-                  className={`
-                    flex items-center px-3 py-3 rounded-xl text-sm font-medium transition-all duration-300 group relative overflow-hidden
-                    ${isActive
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 scale-105'
-                      : 'text-gray-600 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 hover:text-blue-600 hover:scale-[1.02]'
-                    }
-                  `}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <item.icon className={`h-5 w-5 mr-3 transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
-                  {item.name}
-                  {isActive && (
-                    <div className="absolute right-2 w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                  )}
-                </Link>
+                  item={item}
+                  isActive={isActive}
+                  index={index}
+                  onMobileMenuClose={() => setIsMobileMenuOpen(false)}
+                  isCollapsed={isSidebarCollapsed}
+                />
               )
             })}
-
-            <Separator className="my-6 opacity-50" />
-
-            {/* Enhanced Book Appointment Button */}
-            <Link href="/dashboard/appointments/create">
-              <Button
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform duration-300" />
-                Book Appointment
-              </Button>
-            </Link>
           </nav>
 
-          {/* Enhanced User section */}
-          <div className="p-4 border-t border-gray-200/50">
+          {/* Clean User section */}
+          <div className="p-4 border-t border-gray-200/50 dark:border-gray-700/50">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="w-full justify-start h-auto p-3 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-300 rounded-xl group">
-                  <Avatar className="h-10 w-10 mr-3 ring-2 ring-transparent group-hover:ring-blue-200 transition-all duration-300">
+                <Button variant="ghost" className={`w-full h-auto p-3 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 dark:hover:from-gray-800 dark:hover:to-blue-900/50 transition-all duration-300 rounded-xl group ${isSidebarCollapsed ? 'justify-center' : 'justify-start'}`}>
+                  <Avatar className={`ring-2 ring-transparent group-hover:ring-blue-200 dark:group-hover:ring-blue-700 transition-all duration-300 ${isSidebarCollapsed ? 'h-8 w-8' : 'h-10 w-10 mr-3'}`}>
                     <AvatarImage src={user?.profile?.profile_picture || "/placeholder-avatar.jpg"} />
                     <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white">{userInitials}</AvatarFallback>
                   </Avatar>
-                  <div className="text-left">
-                    <p className="text-sm font-medium group-hover:text-blue-600 transition-colors duration-300">{displayName}</p>
-                    <p className="text-xs text-gray-500">{user?.email}</p>
+                  <div className={`text-left transition-all duration-300 ${isSidebarCollapsed ? 'hidden' : ''}`}>
+                    <p className="text-sm font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">{displayName}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 border-gray-200/50 bg-white/95 backdrop-blur-sm">
-                <DropdownMenuItem className="hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-200">
+              <DropdownMenuContent align="end" className="w-56 border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
+                <DropdownMenuItem className="hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 dark:hover:from-gray-800 dark:hover:to-blue-900/50 transition-all duration-200">
                   <User className="h-4 w-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 dark:hover:from-gray-800 dark:hover:to-blue-900/50 transition-all duration-200">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 transition-all duration-200">
+                <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 dark:hover:from-red-900/50 dark:hover:to-red-800/50 transition-all duration-200">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign out
                 </DropdownMenuItem>
@@ -301,16 +480,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Main content with enhanced layout - PROPER MARGIN FOR FIXED SIDEBAR */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-500 ${isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
         {/* Enhanced Top bar */}
-        <header className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 sticky top-0 z-30">
+        <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-30">
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex-1 lg:hidden"></div>
 
               <div className="flex items-center space-x-4 ml-auto">
                 {/* Enhanced notification bell */}
-                <Button variant="ghost" size="icon" className="relative hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-300 hover:scale-105 group">
+                <Button variant="ghost" size="icon" className="relative hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 dark:hover:from-gray-800 dark:hover:to-blue-900/50 transition-all duration-300 hover:scale-105 group">
                   <Bell className="h-5 w-5 group-hover:animate-pulse" />
                   <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs animate-bounce">
                     3
@@ -320,21 +499,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <div className="hidden lg:block">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="flex items-center space-x-3 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-300 rounded-xl group">
+                      <Button variant="ghost" className="flex items-center space-x-3 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 dark:hover:from-gray-800 dark:hover:to-blue-900/50 transition-all duration-300 rounded-xl group">
                         <Avatar className="h-8 w-8 ring-2 ring-transparent group-hover:ring-blue-200 transition-all duration-300">
                           <AvatarImage src={user?.profile?.profile_picture || "/placeholder-avatar.jpg"} />
                           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white">{userInitials}</AvatarFallback>
                         </Avatar>
-                        <span className="text-sm font-medium hidden md:block group-hover:text-blue-600 transition-colors duration-300">{displayName}</span>
+                        <span className="text-sm font-medium hidden md:block group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">{displayName}</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 border-gray-200/50 bg-white/95 backdrop-blur-sm">
-                      <DropdownMenuItem className="hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 transition-all duration-200">
+                    <DropdownMenuContent align="end" className="w-56 border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
+                      <DropdownMenuItem className="hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 dark:hover:from-gray-800 dark:hover:to-blue-900/50 transition-all duration-200">
                         <User className="h-4 w-4 mr-2" />
                         Profile
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout} className="text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 transition-all duration-200">
+                      <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 dark:hover:from-red-900/50 dark:hover:to-red-800/50 transition-all duration-200">
                         <LogOut className="h-4 w-4 mr-2" />
                         Sign out
                       </DropdownMenuItem>
@@ -357,7 +536,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Enhanced Mobile menu overlay */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden animate-in fade-in duration-300"
+          className="fixed inset-0 bg-black/60 dark:bg-black/70 backdrop-blur-sm z-30 lg:hidden animate-in fade-in duration-300"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}

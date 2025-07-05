@@ -44,8 +44,8 @@ export default function AppointmentsPage() {
       {/* Header with smooth animation */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 opacity-0 animate-[fadeInUp_0.8s_ease-out_forwards]">
         <div className="opacity-0 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]">
-          <h1 className="text-3xl font-bold text-gray-900 bg-gradient-to-r from-gray-900 to-blue-600 bg-clip-text">My Appointments</h1>
-          <p className="text-gray-600 mt-1">Manage your car service appointments</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white bg-gradient-to-r from-gray-900 dark:from-white to-blue-600 dark:to-blue-400 bg-clip-text">My Appointments</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">Manage your car service appointments</p>
         </div>
         <Button
           onClick={() => router.push('/dashboard/appointments/create')}
@@ -103,16 +103,16 @@ export default function AppointmentsPage() {
 
         <TabsContent value={activeTab} className="mt-6">
           {filteredAppointments.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Calendar className="h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments found</h3>
-                <p className="text-gray-600 text-center">
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <Calendar className="h-10 w-10 text-gray-400 mb-3" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No appointments found</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-center text-sm">
                   {searchTerm ? "Try adjusting your search terms." : "You don't have any appointments yet."}
                 </p>
                 {!searchTerm && (
-                  <Button className="mt-4">
-                    <Calendar className="h-4 w-4 mr-2" />
+                  <Button className="mt-3 h-8 text-sm">
+                    <Calendar className="h-3 w-3 mr-2" />
                     Book Your First Appointment
                   </Button>
                 )}
@@ -123,80 +123,80 @@ export default function AppointmentsPage() {
               {filteredAppointments.map((appointment: Appointment, index: number) => (
                 <Card
                   key={appointment.id}
-                  className="hover:shadow-xl hover:scale-[1.01] transition-all duration-300 border-l-4 border-l-transparent hover:border-l-blue-500 opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards] group"
+                  className="hover:shadow-xl hover:scale-[1.01] transition-all duration-300 border-l-4 border-l-transparent hover:border-l-blue-500 opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards] group dark:bg-gray-800 dark:border-gray-700"
                   style={{ animationDelay: `${0.6 + (index * 0.1)}s` }}
                 >
-                  <CardHeader className="pb-3">
+                  <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="text-lg">{appointment.service_center?.name}</CardTitle>
-                        <CardDescription className="flex items-center mt-1">
-                          <Car className="h-4 w-4 mr-1" />
-                          {appointment.vehicle?.name}
+                        <CardTitle className="text-base dark:text-white">{appointment.service_center?.name}</CardTitle>
+                        <CardDescription className="flex items-center mt-1 dark:text-gray-300 text-sm">
+                          <Car className="h-3 w-3 mr-1" />
+                          {appointment.vehicle?.model} {appointment.vehicle?.year}
                         </CardDescription>
                       </div>
-                      <Badge className={`${getStatusColor(appointment.status)} transition-all duration-300 hover:scale-105`}>
+                      <Badge className={`${getStatusColor(appointment.status)} transition-all duration-300 hover:scale-105 text-xs`}>
                         {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                      <div className="flex items-center text-gray-600">
-                        <Calendar className="h-4 w-4 mr-2 text-blue-500" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                      <div className="flex items-center text-gray-600 dark:text-gray-300">
+                        <Calendar className="h-3 w-3 mr-2 text-blue-500" />
                         <div>
-                          <p className="font-medium">{new Date(appointment.date).toLocaleDateString()}</p>
-                          <p className="text-xs text-gray-500">Date</p>
+                          <p className="font-medium dark:text-white text-xs">{new Date(appointment.date).toLocaleDateString()}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Date</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center text-gray-600">
-                        <Clock className="h-4 w-4 mr-2 text-green-500" />
+                      <div className="flex items-center text-gray-600 dark:text-gray-300">
+                        <Clock className="h-3 w-3 mr-2 text-green-500" />
                         <div>
-                          <p className="font-medium">{appointment.time}</p>
-                          <p className="text-xs text-gray-500">Time</p>
+                          <p className="font-medium dark:text-white text-xs">{appointment.time}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Time</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center text-gray-600">
-                        <MapPin className="h-4 w-4 mr-2 text-red-500" />
+                      <div className="flex items-center text-gray-600 dark:text-gray-300">
+                        <MapPin className="h-3 w-3 mr-2 text-red-500" />
                         <div>
-                          <p className="font-medium">{appointment.service_center?.name}</p>
-                          <p className="text-xs text-gray-500">{appointment.service_center?.locations?.city}, {appointment.service_center?.locations?.state}</p>
+                          <p className="font-medium dark:text-white text-xs">{appointment.service_center?.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{appointment.service_center?.locations?.city}, {appointment.service_center?.locations?.state}</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center text-gray-600">
-                        <Phone className="h-4 w-4 mr-2 text-purple-500" />
+                      <div className="flex items-center text-gray-600 dark:text-gray-300">
+                        <Phone className="h-3 w-3 mr-2 text-purple-500" />
                         <div>
-                          <p className="font-medium">{appointment.items.reduce((acc, item) => acc + item.price, 0)}</p>
-                          <p className="text-xs text-gray-500">Price</p>
+                          <p className="font-medium dark:text-white text-xs">{appointment.items.reduce((acc, item) => acc + item.price, 0)}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Price</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex justify-end space-x-2 mt-4 pt-4 border-t">
+                    <div className="flex justify-end space-x-2 mt-3 pt-3 border-t dark:border-gray-700">
                       {appointment.status === "CONFIRMED" && (
                         <>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" className="h-7 text-xs">
                             Reschedule
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" className="h-7 text-xs">
                             Cancel
                           </Button>
                         </>
                       )}
                       {appointment.status === "PENDING" && (
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="h-7 text-xs">
                           View Details
                         </Button>
                       )}
                       {appointment.status === "COMPLETED" && (
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="h-7 text-xs">
                           Book Again
                         </Button>
                       )}
-                      <Button size="sm">
+                      <Button size="sm" className="h-7 text-xs">
                         Contact Shop
                       </Button>
                     </div>

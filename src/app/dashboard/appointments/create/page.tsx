@@ -139,22 +139,22 @@ const CreateAppointmentPage: React.FC = () => {
     selectedTime !== "";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white shadow-sm rounded-xl">
+      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Book Appointment
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-gray-600 dark:text-gray-300 mt-1">
                 Schedule your vehicle service
               </p>
             </div>
@@ -184,17 +184,17 @@ const CreateAppointmentPage: React.FC = () => {
                 (center: ServiceCenter, index: number) => (
                   <div
                     key={center.id}
-                    className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200"
+                    className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200"
                   >
                     <div className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
                                 {center.name}
                               </h3>
-                              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                              <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
                                 <div className="flex items-center space-x-1">
                                   <Phone className="h-4 w-4 text-gray-400" />
                                   <span>{center.phone}</span>
@@ -207,7 +207,7 @@ const CreateAppointmentPage: React.FC = () => {
                             </div>
                           </div>
 
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-gray-600 dark:text-gray-300">
                             <div className="flex items-center space-x-1">
                               <MapPin className="h-4 w-4 text-gray-400" />
                               <span>{center.locations?.address}</span>
@@ -253,7 +253,7 @@ const CreateAppointmentPage: React.FC = () => {
                         className={`flex items-center justify-center w-10 h-10 rounded-full ${
                           currentStep >= item.step
                             ? "bg-blue-600 text-white"
-                            : "bg-gray-200 text-gray-500"
+                            : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300"
                         }`}
                       >
                         <span className="text-sm font-medium">{item.step}</span>
@@ -261,8 +261,8 @@ const CreateAppointmentPage: React.FC = () => {
                       <span
                         className={`ml-2 text-sm font-medium ${
                           currentStep >= item.step
-                            ? "text-blue-600"
-                            : "text-gray-500"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-gray-500 dark:text-gray-400"
                         }`}
                       >
                         {item.label}
@@ -272,7 +272,7 @@ const CreateAppointmentPage: React.FC = () => {
                           className={`ml-8 w-16 h-0.5 ${
                             currentStep > item.step
                               ? "bg-blue-600"
-                              : "bg-gray-200"
+                              : "bg-gray-200 dark:bg-gray-700"
                           }`}
                         />
                       )}
@@ -287,8 +287,8 @@ const CreateAppointmentPage: React.FC = () => {
               <div className="lg:col-span-2">
                 {/* Step 1: Service Selection */}
                 {currentStep === 1 && (
-                  <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                       Select Services
                     </h2>
                     <div className="space-y-4">
@@ -302,8 +302,8 @@ const CreateAppointmentPage: React.FC = () => {
                             onClick={() => toggleService(service)}
                             className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                               isSelected
-                                ? "border-blue-600 bg-blue-50"
-                                : "border-gray-200 hover:border-gray-300"
+                                ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                             }`}
                           >
                             <div className="flex items-center justify-between">
@@ -321,14 +321,14 @@ const CreateAppointmentPage: React.FC = () => {
                                     )}
                                   </div>
                                   <div>
-                                    <h3 className="font-medium text-gray-900">
+                                    <h3 className="font-medium text-gray-900 dark:text-white">
                                       {service.name}
                                     </h3>
-                                    <p className="text-sm text-gray-600">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">
                                       {service.description}
                                     </p>
                                     <div className="flex items-center gap-4 mt-2">
-                                      <span className="text-sm text-gray-500">
+                                      <span className="text-sm text-gray-500 dark:text-gray-400">
                                         <Clock className="w-4 h-4 inline mr-1" />
                                         {service.duration} min
                                       </span>
@@ -348,7 +348,7 @@ const CreateAppointmentPage: React.FC = () => {
                                 </div>
                               </div>
                               <div className="text-right">
-                                <p className="text-lg font-semibold text-gray-900">
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">
                                   RM {service.price}
                                 </p>
                               </div>
@@ -371,8 +371,8 @@ const CreateAppointmentPage: React.FC = () => {
 
                 {/* Step 2: Vehicle Selection */}
                 {currentStep === 2 && (
-                  <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                       Select Vehicle
                     </h2>
                     <div className="space-y-4">
@@ -382,19 +382,19 @@ const CreateAppointmentPage: React.FC = () => {
                           onClick={() => setSelectedVehicle(vehicle)}
                           className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                             selectedVehicle?.id === vehicle.id
-                              ? "border-blue-600 bg-blue-50"
-                              : "border-gray-200 hover:border-gray-300"
+                              ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                              : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                           }`}
                         >
                           <div className="flex items-center gap-4">
-                            <div className="p-3 bg-gray-100 rounded-full">
-                              <Car className="w-6 h-6 text-gray-600" />
+                            <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-full">
+                              <Car className="w-6 h-6 text-gray-600 dark:text-gray-300" />
                             </div>
                             <div className="flex-1">
-                              <h3 className="font-medium text-gray-900">
+                              <h3 className="font-medium text-gray-900 dark:text-white">
                                 {vehicle.year} {vehicle.license_plate}
                               </h3>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-gray-600 dark:text-gray-300">
                                 {vehicle.license_plate} • {vehicle.color}
                               </p>
                             </div>
@@ -416,7 +416,7 @@ const CreateAppointmentPage: React.FC = () => {
                     <div className="mt-6 flex justify-between">
                       <button
                         onClick={() => setCurrentStep(1)}
-                        className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         Back
                       </button>
@@ -433,14 +433,14 @@ const CreateAppointmentPage: React.FC = () => {
 
                 {/* Step 3: Date & Time Selection */}
                 {currentStep === 3 && (
-                  <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                       Select Date & Time
                     </h2>
 
                     {/* Date Selection */}
                     <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Preferred Date
                       </label>
                       <input
@@ -448,13 +448,13 @@ const CreateAppointmentPage: React.FC = () => {
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
                         min={new Date().toISOString().split("T")[0]}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
 
                     {/* Time Selection */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Preferred Time
                       </label>
                       <div className="grid grid-cols-4 gap-3">
@@ -464,8 +464,8 @@ const CreateAppointmentPage: React.FC = () => {
                             onClick={() => setSelectedTime(time)}
                             className={`p-3 text-sm rounded-lg border transition-colors ${
                               selectedTime === time
-                                ? "border-blue-600 bg-blue-50 text-blue-600"
-                                : "border-gray-200 hover:border-gray-300"
+                                ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             }`}
                           >
                             {time}
@@ -477,7 +477,7 @@ const CreateAppointmentPage: React.FC = () => {
                     <div className="mt-6 flex justify-between">
                       <button
                         onClick={() => setCurrentStep(2)}
-                        className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         Back
                       </button>
@@ -494,31 +494,31 @@ const CreateAppointmentPage: React.FC = () => {
 
                 {/* Step 4: Review & Confirm */}
                 {currentStep === 4 && (
-                  <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                       Review Appointment
                     </h2>
 
                     {/* Selected Services */}
                     <div className="mb-6">
-                      <h3 className="font-medium text-gray-900 mb-3">
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-3">
                         Selected Services
                       </h3>
                       <div className="space-y-2">
                         {selectedServices.map((service: Service) => (
                           <div
                             key={service.id}
-                            className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                            className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
                           >
                             <div>
-                              <p className="font-medium text-gray-900">
+                              <p className="font-medium text-gray-900 dark:text-white">
                                 {service.name}
                               </p>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-gray-600 dark:text-gray-300">
                                 {service.duration} minutes
                               </p>
                             </div>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-medium text-gray-900 dark:text-white">
                               RM {service.price}
                             </p>
                           </div>
@@ -528,15 +528,15 @@ const CreateAppointmentPage: React.FC = () => {
 
                     {/* Selected Vehicle */}
                     <div className="mb-6">
-                      <h3 className="font-medium text-gray-900 mb-3">
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-3">
                         Vehicle
                       </h3>
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <p className="font-medium text-gray-900">
+                      <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <p className="font-medium text-gray-900 dark:text-white">
                           {selectedVehicle?.year}{" "}
                           {selectedVehicle?.license_plate}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
                           {selectedVehicle?.color}
                         </p>
                       </div>
@@ -544,14 +544,14 @@ const CreateAppointmentPage: React.FC = () => {
 
                     {/* Date & Time */}
                     <div className="mb-6">
-                      <h3 className="font-medium text-gray-900 mb-3">
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-3">
                         Appointment Details
                       </h3>
-                      <div className="p-3 bg-gray-50 rounded-lg">
-                        <p className="font-medium text-gray-900">
+                      <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <p className="font-medium text-gray-900 dark:text-white">
                           {selectedDate} at {selectedTime}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
                           Total duration: {getTotalDuration()} minutes
                         </p>
                       </div>
@@ -560,7 +560,7 @@ const CreateAppointmentPage: React.FC = () => {
                     <div className="mt-6 flex justify-between">
                       <button
                         onClick={() => setCurrentStep(3)}
-                        className="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         Back
                       </button>
@@ -578,7 +578,7 @@ const CreateAppointmentPage: React.FC = () => {
               {/* Sidebar */}
               <div className="space-y-6">
                 {/* Service Center Info */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
                   {serviceCenter && (
                     <>
                       <img
@@ -586,10 +586,10 @@ const CreateAppointmentPage: React.FC = () => {
                         alt={serviceCenter.name}
                         className="w-full h-32 object-cover rounded-lg mb-4"
                       />
-                      <h3 className="font-semibold text-gray-900 mb-3">
+                      <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
                         {serviceCenter.name}
                       </h3>
-                      <div className="space-y-2 text-sm text-gray-600">
+                      <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                         <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4" />
                           <span>{serviceCenter.locations?.address}</span>
@@ -609,8 +609,8 @@ const CreateAppointmentPage: React.FC = () => {
 
                 {/* Order Summary */}
                 {selectedServices.length > 0 && (
-                  <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h3 className="font-semibold text-gray-900 mb-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
                       Order Summary
                     </h3>
                     <div className="space-y-3">
@@ -619,18 +619,18 @@ const CreateAppointmentPage: React.FC = () => {
                           key={service.id}
                           className="flex justify-between text-sm"
                         >
-                          <span className="text-gray-600">{service.name}</span>
-                          <span className="font-medium">
+                          <span className="text-gray-600 dark:text-gray-300">{service.name}</span>
+                          <span className="font-medium dark:text-white">
                             RM {service.price}
                           </span>
                         </div>
                       ))}
-                      <div className="border-t pt-3">
-                        <div className="flex justify-between font-semibold">
+                      <div className="border-t dark:border-gray-700 pt-3">
+                        <div className="flex justify-between font-semibold dark:text-white">
                           <span>Total</span>
                           <span>RM {getTotalPrice()}</span>
                         </div>
-                        <div className="flex justify-between text-sm text-gray-600 mt-1">
+                        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mt-1">
                           <span>Total Duration</span>
                           <span>{getTotalDuration()} minutes</span>
                         </div>

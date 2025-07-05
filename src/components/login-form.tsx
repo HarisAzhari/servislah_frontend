@@ -37,7 +37,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const { loginWithGoogleMutation } = useAuthTanstack();
+  const { loginWithGoogleMutation, refreshAuth } = useAuthTanstack();
   const router = useRouter();
 
   const form = useForm<LoginFormData>({
@@ -81,6 +81,9 @@ export function LoginForm() {
 
         // Store user object for useAuthTanstack hook
         localStorage.setItem("user", JSON.stringify(userData));
+
+        // Refresh auth state to sync with useAuthTanstack
+        await refreshAuth();
 
         // Show success message
         toast.success("Login successful!");

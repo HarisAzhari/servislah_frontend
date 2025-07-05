@@ -147,55 +147,55 @@ export default function ServiceCentersPage() {
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
-              <Building className="h-8 w-8 text-blue-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+              <Building className="h-6 w-6 text-blue-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
                   Total Centers
                 </p>
-                <p className="text-2xl font-bold">{totalCenters}</p>
+                <p className="text-xl font-bold dark:text-white">{totalCenters}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                <div className="h-4 w-4 bg-green-600 rounded-full" />
+              <div className="h-6 w-6 bg-green-100 dark:bg-green-800 rounded-full flex items-center justify-center">
+                <div className="h-3 w-3 bg-green-600 dark:bg-green-400 rounded-full" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
                   Active Centers
                 </p>
-                <p className="text-2xl font-bold">{activeCenters}</p>
+                <p className="text-xl font-bold dark:text-white">{activeCenters}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
-              <Wrench className="h-8 w-8 text-orange-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+              <Wrench className="h-6 w-6 text-orange-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
                   Total Services
                 </p>
-                <p className="text-2xl font-bold">{totalServices}</p>
+                <p className="text-xl font-bold dark:text-white">{totalServices}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
-              <Users className="h-8 w-8 text-purple-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+              <Users className="h-6 w-6 text-purple-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
                   Total Mechanics
                 </p>
-                <p className="text-2xl font-bold">{totalMechanics}</p>
+                <p className="text-xl font-bold dark:text-white">{totalMechanics}</p>
               </div>
             </div>
           </CardContent>
@@ -205,12 +205,12 @@ export default function ServiceCentersPage() {
       {/* Service Centers List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredAndSortedCenters?.map((center) => (
-          <Card key={center.id} className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-4">
+          <Card key={center.id} className="hover:shadow-lg transition-shadow dark:bg-gray-800 dark:border-gray-700">
+            <CardContent className="p-3">
               {/* Header with Image and Title */}
-              <div className="flex items-start gap-3 mb-3">
+              <div className="flex items-start gap-2 mb-2">
                 {center.image && (
-                  <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
                     <img
                       src={center.image}
                       alt={center.name}
@@ -220,7 +220,7 @@ export default function ServiceCentersPage() {
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-sm truncate">
+                    <h3 className="font-semibold text-sm truncate dark:text-white">
                       {center.name}
                     </h3>
                     <Badge
@@ -240,14 +240,14 @@ export default function ServiceCentersPage() {
               </div>
 
               {/* Contact Information */}
-              <div className="space-y-1 mb-3">
-                <div className="flex items-center text-xs text-gray-600">
-                  <Phone className="h-3 w-3 mr-2" />
+              <div className="space-y-0.5 mb-2">
+                <div className="flex items-center text-xs text-gray-600 dark:text-gray-300">
+                  <Phone className="h-3 w-3 mr-1.5" />
                   {center.phone}
                 </div>
                 {center.locations && (
-                  <div className="flex items-start text-xs text-gray-600">
-                    <MapPin className="h-3 w-3 mr-2 mt-0.5 flex-shrink-0" />
+                  <div className="flex items-start text-xs text-gray-600 dark:text-gray-300">
+                    <MapPin className="h-3 w-3 mr-1.5 mt-0.5 flex-shrink-0" />
                     <span className="truncate">
                       {center.locations.city}, {center.locations.state}
                     </span>
@@ -263,13 +263,13 @@ export default function ServiceCentersPage() {
                       <Badge
                         key={service.id}
                         variant="outline"
-                        className="text-xs px-2 py-0"
+                        className="text-xs px-1.5 py-0 h-5"
                       >
                         {service.name}
                       </Badge>
                     ))}
                     {center.services.length > 2 && (
-                      <Badge variant="outline" className="text-xs px-2 py-0">
+                      <Badge variant="outline" className="text-xs px-1.5 py-0 h-5">
                         +{center.services.length - 2}
                       </Badge>
                     )}
@@ -278,7 +278,7 @@ export default function ServiceCentersPage() {
               )}
 
               {/* Bottom Info */}
-              <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                 {center.mechanics && center.mechanics.length > 0 && (
                   <div className="flex items-center">
                     <Users className="h-3 w-3 mr-1" />
@@ -302,9 +302,9 @@ export default function ServiceCentersPage() {
 
       {/* Empty State */}
       {filteredAndSortedCenters?.length === 0 && (
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <p className="text-gray-500">
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
+          <CardContent className="p-4 text-center">
+            <p className="text-gray-500 dark:text-gray-400">
               No service centers found matching your search.
             </p>
           </CardContent>

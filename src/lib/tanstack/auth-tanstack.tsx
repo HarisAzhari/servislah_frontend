@@ -14,28 +14,31 @@ export const useAuthTanstack = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const savedUser = localStorage.getItem("user");
-        if (savedUser) {
-          const parsedUser = JSON.parse(savedUser);
-          setUser(parsedUser);
-          setIsAuthenticated(true);
+  const checkAuth = async () => {
+    try {
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
 
-          localStorage.setItem("user", JSON.stringify(parsedUser));
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-        // Clear invalid credentials
-        localStorage.removeItem("user");
+        localStorage.setItem("user", JSON.stringify(parsedUser));
+      } else {
         setUser(null);
         setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("Auth check failed:", error);
+      // Clear invalid credentials
+      localStorage.removeItem("user");
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     checkAuth();
   }, []);
 
@@ -164,5 +167,6 @@ export const useAuthTanstack = () => {
     logoutMutation,
     login: () => loginWithGoogleMutation.mutate(),
     logout: () => logoutMutation.mutate(),
+    refreshAuth: checkAuth,
   };
 };

@@ -304,3 +304,20 @@
   50% { width: 100%; transform: translateX(0%); }
   100% { width: 100%; transform: translateX(100%); }
 }
+
+/* Mini Car Loading Animation Keyframes */
+@keyframes miniCarMove {
+  0% { transform: translateX(-4px); }
+  100% { transform: translateX(20px); }
+}
+
+@keyframes miniSmoke {
+  0% { 
+    transform: translateX(0) translateY(0) scale(1);
+    opacity: 0.5;
+  }
+  100% { 
+    transform: translateX(-8px) translateY(-4px) scale(0.3);
+    opacity: 0;
+  }
+}
