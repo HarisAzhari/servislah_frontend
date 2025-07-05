@@ -1,235 +1,226 @@
-'use client'
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { Heart, Info, Phone, Search } from 'lucide-react';
-import { Vehicle } from '@/types/vehicle';
-import { getUserVehicles } from '@/lib/services/vehicle.service';
-import { useGetVehicleByUserId } from '@/lib/tanstack/vehicle-tanstack';
+import React, { useState } from "react";
+import { Car, Calendar, Fuel, Palette, Hash, Search, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Vehicle } from "@/types/vehicle";
+import { useGetUserVehicles } from "@/lib/tanstack/vehicle-tanstack";
+import { AddVehicleDialog } from "@/components/add-vehicle-dialog";
 
-const MyVehicles = () => {
+const VehiclesPage = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const { data: vehicles } = useGetVehicleByUserId();
+  const { data: vehiclesData, isLoading, error } = useGetUserVehicles();
 
+  const vehicles = vehiclesData?.vehicles || [];
+  const totalVehicles = vehiclesData?.metadata?.total || 0;
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Main Content */}
-      <div className="flex">
-        {/* Content Area */}
-        <div className="flex-1 p-8">
-          {/* Filter Controls */}
-          <div className="grid grid-cols-5 gap-4 mb-8">
-            <div>
-              <label className="block text-slate-600 text-sm mb-2 font-medium">Location</label>
-              <select className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                <option>GST, Mall Gulshan</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-slate-600 text-sm mb-2 font-medium">Pick Up Date</label>
-              <select className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                <option>06-Sep-2023</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-slate-600 text-sm mb-2 font-medium">Drop of Date</label>
-              <select className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                <option>06-Sep-2023</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-slate-600 text-sm mb-2 font-medium">Pickup Time</label>
-              <select className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                <option>10:00 AM</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-slate-600 text-sm mb-2 font-medium">Drop off Time</label>
-              <select className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
-                <option>05:00 PM</option>
-              </select>
-            </div>
-          </div>
+  const filteredVehicles = vehicles.filter(
+    (vehicle: Vehicle) =>
+      vehicle.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vehicle.license_plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vehicle.color?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-          {/* Available Cars Section */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-slate-800">Available Cars</h2>
-            <div className="flex items-center gap-4">
-              <button className="text-slate-600 hover:text-slate-800 font-medium">View All</button>
-              <button className="text-slate-600 hover:text-slate-800 font-medium">Recent Activity</button>
-              <Info className="text-slate-500" size={20} />
-            </div>
-          </div>
+  const getFuelTypeColor = (fuelType?: string) => {
+    switch (fuelType) {
+      case "GASOLINE":
+        return "bg-orange-100 text-orange-800";
+      case "DIESEL":
+        return "bg-blue-100 text-blue-800";
+      case "ELECTRIC":
+        return "bg-green-100 text-green-800";
+      case "HYBRID":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
 
-          {/* Cars Grid */}
-          <div className="grid grid-cols-2 gap-6">
-            {vehicles?.map((vehicle: Vehicle) => (
-              <div key={vehicle.id} className="bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 relative group" style={{
-                boxShadow: '0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                transform: 'perspective(1000px) rotateX(1deg)',
-                transformStyle: 'preserve-3d'
-              }}>
-                {/* Curved bottom shadow effect */}
-                <div className="absolute -bottom-2 left-4 right-4 h-4 bg-slate-200/40 rounded-full blur-md" style={{
-                  transform: 'perspective(100px) rotateX(45deg) scaleY(0.3)'
-                }}></div>
+  const getFuelTypeIcon = (fuelType?: string) => {
+    switch (fuelType) {
+      case "ELECTRIC":
+        return "⚡";
+      case "HYBRID":
+        return "🔋";
+      default:
+        return "⛽";
+    }
+  };
 
-                {/* Favorite Button */}
-                <button className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-lg hover:scale-110 transition-transform">
-                  <Heart className="text-slate-400 hover:text-red-500" size={20} />
-                </button>
-
-                {/* Car Image */}
-                <div className="h-64 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-6 relative">
-                  {vehicle.images && vehicle.images.length > 0 ? (
-                    <img
-                      src={vehicle.images[0]}
-                      alt={`${vehicle.model}`}
-                      className="w-full h-full object-contain transform scale-110 group-hover:scale-115 transition-transform duration-300"
-                    />
-                  ) : (
-                    <img
-                      src="/black-isolated-car_23-2151852894-removebg-preview.png"
-                      alt={`${vehicle.model}`}
-                      className="w-full h-full object-contain transform scale-110 group-hover:scale-115 transition-transform duration-300"
-                    />
-                  )}
-                </div>
-
-                {/* Car Details */}
-                <div className="p-6 bg-white relative">
-                  <h3 className="text-xl font-bold text-slate-800 mb-4">
-                    {vehicle.model}
-                  </h3>
-
-                  <div className="grid grid-cols-3 gap-4 text-sm mb-6">
-                    <div>
-                      <span className="text-slate-500">Year: </span>
-                      <span className="text-slate-800 font-medium">{vehicle.year}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">License: </span>
-                      <span className="text-slate-800 font-medium">{vehicle.license_plate}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">Color: </span>
-                      <span className="text-slate-800 font-medium">{vehicle.color || 'N/A'}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right Sidebar */}
-        <div className="w-80 bg-white/70 backdrop-blur-sm p-6 border border-white/20">
-          {/* Export Button */}
-          <button className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-3 px-4 rounded-lg font-medium mb-8 flex items-center justify-center gap-2 shadow-lg">
-            📤 Export
-          </button>
-
-          {/* Car Info Section */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">🚗</span>
-              </div>
-              <div>
-                <h3 className="text-slate-800 font-bold">Lamborghini Autofill</h3>
-                <p className="text-slate-600 text-sm">2 hrs Rescaling</p>
-              </div>
-            </div>
-
-            <div className="text-2xl font-bold text-blue-600 mb-4">$ 285,892</div>
-
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-slate-600">Car Info</span>
-                <Info className="text-slate-500" size={16} />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Georgia bills, 16</span>
-                  <span className="text-slate-800 font-medium">48 KM</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">105 Saint<br />Laurence UK</span>
-                  <span className="text-slate-800 font-medium">2h 18m</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">103 Chicago</span>
-                  <span className="text-slate-800 font-medium">7h/km/h</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 mt-4">
-                <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-                <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-                <div className="w-4 h-4 bg-slate-300 rounded-full"></div>
-              </div>
-
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Fuel</span>
-                  <span className="text-slate-800 font-medium">12 Liters</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">People Used</span>
-                  <span className="text-slate-800 font-medium">4 Person</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Condition</span>
-                  <span className="text-slate-800 font-medium">Average</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* User Profile */}
-          <div className="border-t border-slate-200 pt-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
-              <div>
-                <p className="text-slate-800 font-medium">Matthew Jones</p>
-                <p className="text-slate-600 text-sm">matthew@gmail.com</p>
-              </div>
-            </div>
-
-            <div className="flex gap-2 mb-6">
-              <button className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
-                <Phone className="text-slate-600" size={16} />
-              </button>
-              <button className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
-                <Search className="text-slate-600" size={16} />
-              </button>
-            </div>
-          </div>
-
-          {/* Another User */}
-          <div className="border-t border-slate-200 pt-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full"></div>
-              <div>
-                <p className="text-slate-800 font-medium">Andrew Smith</p>
-                <p className="text-slate-600 text-sm">3 hrs Rescaling</p>
-              </div>
-              <div className="ml-auto flex gap-2">
-                <button className="p-1 bg-slate-100 hover:bg-slate-200 rounded transition-colors">
-                  <Phone className="text-slate-600" size={14} />
-                </button>
-                <button className="p-1 bg-slate-100 hover:bg-slate-200 rounded transition-colors">
-                  <Search className="text-slate-600" size={14} />
-                </button>
-              </div>
-            </div>
-            <div className="text-blue-600 font-bold mt-2">$ 44,7K</div>
-          </div>
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Car className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Failed to load vehicles
+          </h2>
+          <p className="text-gray-600">Please try again later</p>
         </div>
       </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Car className="w-12 h-12 text-gray-400 mx-auto mb-4 animate-pulse" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Loading vehicles...
+          </h2>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">My Vehicles</h1>
+          <p className="text-gray-600 mt-1">
+            Manage your vehicles and their details
+          </p>
+        </div>
+        <Button
+          onClick={() => setIsAddDialogOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Vehicle
+        </Button>
+      </div>
+
+      {/* Stats Card */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                Total Vehicles
+              </p>
+              <p className="text-2xl font-bold text-gray-900">
+                {totalVehicles}
+              </p>
+            </div>
+            <Car className="w-8 h-8 text-blue-600" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <Input
+          placeholder="Search vehicles by model, license plate, or color..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
+      {/* Vehicles Grid */}
+      {filteredVehicles.length === 0 ? (
+        <div className="text-center py-12">
+          <Car className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {searchTerm ? "No vehicles found" : "No vehicles yet"}
+          </h3>
+          <p className="text-gray-600">
+            {searchTerm
+              ? "Try adjusting your search terms"
+              : "No vehicles to display"}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredVehicles.map((vehicle: Vehicle) => (
+            <Card
+              key={vehicle.id}
+              className="overflow-hidden hover:shadow-lg transition-shadow duration-300"
+            >
+              {/* Vehicle Image */}
+              <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
+                {vehicle.images && vehicle.images.length > 0 ? (
+                  <img
+                    src={vehicle.images[0]}
+                    alt={vehicle.model}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Car className="w-16 h-16 text-gray-400" />
+                  </div>
+                )}
+              </div>
+
+              {/* Vehicle Details */}
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {vehicle.model}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Added {new Date(vehicle.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600">Year:</span>
+                      <span className="font-medium">{vehicle.year}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Hash className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600">Plate:</span>
+                      <span className="font-medium">
+                        {vehicle.license_plate}
+                      </span>
+                    </div>
+                    {vehicle.color && (
+                      <div className="flex items-center gap-2">
+                        <Palette className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Color:</span>
+                        <span className="font-medium">{vehicle.color}</span>
+                      </div>
+                    )}
+                    {vehicle.fuel_type && (
+                      <div className="flex items-center gap-2">
+                        <Fuel className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Fuel:</span>
+                        <Badge
+                          variant="secondary"
+                          className={getFuelTypeColor(vehicle.fuel_type)}
+                        >
+                          {getFuelTypeIcon(vehicle.fuel_type)}{" "}
+                          {vehicle.fuel_type}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Add Vehicle Dialog */}
+      <AddVehicleDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+      />
     </div>
   );
 };
 
-export default MyVehicles;
+export default VehiclesPage;

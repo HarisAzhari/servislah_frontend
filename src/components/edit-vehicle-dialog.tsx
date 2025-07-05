@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Car, Loader2, Plus } from "lucide-react";
+import { Car, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -12,7 +12,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,12 +30,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CreateVehicleRequest } from "@/types/vehicle";
-import { useCreateVehicle } from "@/lib/tanstack/vehicle-tanstack";
-import { useAuthTanstack } from "@/lib/tanstack/auth-tanstack";
-import { toast } from "sonner";
+import { Vehicle, UpdateVehicleRequest } from "@/types/vehicle";
+import { useUpdateVehicle } from "@/lib/tanstack/vehicle-tanstack";
 
-const addVehicleFormSchema = z.object({
+const editVehicleFormSchema = z.object({
   model: z.string().min(1, "Model is required"),
   year: z
     .number()
@@ -44,79 +41,53 @@ const addVehicleFormSchema = z.object({
     .max(new Date().getFullYear() + 1, "Year cannot be in the future"),
   color: z.string().min(1, "Color is required"),
   license_plate: z.string().min(1, "License plate is required"),
-  fuel_type: z.enum(["GASOLINE", "DIESEL", "ELECTRIC", "HYBRID"]).optional(),
+  fuel_type: z.enum(["GASOLINE", "DIESEL", "ELECTRIC", "HYBRID"]),
 });
 
-type AddVehicleFormValues = z.infer<typeof addVehicleFormSchema>;
+type EditVehicleFormValues = z.infer<typeof editVehicleFormSchema>;
 
-interface AddVehicleDialogProps {
+interface EditVehicleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  vehicle: Vehicle;
 }
 
-export function AddVehicleDialog({
+export function EditVehicleDialog({
   open,
   onOpenChange,
-}: AddVehicleDialogProps) {
-  const createVehicleMutation = useCreateVehicle();
-  const { user } = useAuthTanstack();
+  vehicle,
+}: EditVehicleDialogProps) {
+  const updateVehicleMutation = useUpdateVehicle();
 
-  const form = useForm<AddVehicleFormValues>({
-    resolver: zodResolver(addVehicleFormSchema),
+  const form = useForm<EditVehicleFormValues>({
+    resolver: zodResolver(editVehicleFormSchema),
     defaultValues: {
-      model: "",
-      year: new Date().getFullYear(),
-      color: "",
-      license_plate: "",
-      fuel_type: undefined,
+      model: vehicle.model,
+      year: vehicle.year,
+      color: vehicle.color || "",
+      license_plate: vehicle.license_plate,
+      fuel_type: vehicle.fuel_type || "GASOLINE",
     },
   });
 
-  const onSubmit = async (data: AddVehicleFormValues) => {
-    if (!user?.id) {
-      console.error("User ID is required");
-      return;
-    }
-
-    const createData: CreateVehicleRequest = {
-      user_id: user.id,
+  const onSubmit = async (data: EditVehicleFormValues) => {
+    const updateData: UpdateVehicleRequest = {
       model: data.model,
       year: data.year,
       color: data.color,
       license_plate: data.license_plate,
-      ...(data.fuel_type && { fuel_type: data.fuel_type }),
+      fuel_type: data.fuel_type,
     };
 
-    console.log("=== CREATE VEHICLE REQUEST ===");
-    console.log("Form data:", data);
-    console.log("User ID:", user.id);
-    console.log("Final request payload:", JSON.stringify(createData, null, 2));
-    console.log("===============================");
-
-    createVehicleMutation.mutate(createData, {
-      onSuccess: (response) => {
-        console.log("=== CREATE VEHICLE SUCCESS ===");
-        console.log("Response:", response);
-        console.log("===============================");
-        toast.success("Vehicle added successfully!");
-        onOpenChange(false);
-        form.reset();
-      },
-      onError: (error) => {
-        console.error("=== CREATE VEHICLE ERROR ===");
-        console.error("Error:", error);
-        console.error("Error message:", error.message);
-        console.error("Error response:", error.response?.data);
-        console.error("============================");
-
-        // Extract the error message from the API response
-        const errorMessage =
-          error.response?.data?.message ||
-          error.message ||
-          "Failed to add vehicle";
-        toast.error(errorMessage);
-      },
-    });
+    updateVehicleMutation.mutate(
+      { id: vehicle.id, vehicle: updateData },
+      {
+        onSuccess: () => {
+          onOpenChange(false);
+          form.reset();
+        },
+      }
+    );
   };
 
   return (
@@ -125,10 +96,10 @@ export function AddVehicleDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Car className="h-5 w-5" />
-            Add New Vehicle
+            Edit Vehicle
           </DialogTitle>
           <DialogDescription>
-            Add a new vehicle to your fleet. Fill in the details below.
+            Update your vehicle information. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -199,14 +170,14 @@ export function AddVehicleDialog({
               name="fuel_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Fuel Type (Optional)</FormLabel>
+                  <FormLabel>Fuel Type</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select fuel type (optional)" />
+                        <SelectValue placeholder="Select fuel type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -225,47 +196,19 @@ export function AddVehicleDialog({
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                disabled={createVehicleMutation.isPending}
+                disabled={updateVehicleMutation.isPending}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createVehicleMutation.isPending}>
-                {createVehicleMutation.isPending && (
+              <Button type="submit" disabled={updateVehicleMutation.isPending}>
+                {updateVehicleMutation.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Add Vehicle
+                Save Changes
               </Button>
             </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// Button component for triggering the add vehicle dialog
-export function AddVehicleButton() {
-  const [open, setOpen] = React.useState(false);
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Vehicle
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Car className="h-5 w-5" />
-            Add New Vehicle
-          </DialogTitle>
-          <DialogDescription>
-            Add a new vehicle to your fleet. Fill in the details below.
-          </DialogDescription>
-        </DialogHeader>
-        <AddVehicleDialog open={open} onOpenChange={setOpen} />
       </DialogContent>
     </Dialog>
   );
