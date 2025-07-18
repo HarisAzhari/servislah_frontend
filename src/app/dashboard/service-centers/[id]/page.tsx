@@ -19,19 +19,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-interface ServiceCenterDetailPageProps {
-  params: {
-    id: string;
-  };
-}
 
-const ServiceCenterDetailPage = ({ params }: ServiceCenterDetailPageProps) => {
+const ServiceCenterDetailPage = async (props: { params: Promise<{ id: string }> }) => {
+  const serviceCenterID = (await props.params).id;
+
   const router = useRouter();
   const {
     data: serviceCenterResponse,
     isLoading,
     error,
-  } = useGetServiceCenterById(params.id);
+  } = useGetServiceCenterById(serviceCenterID);
 
   const serviceCenter = serviceCenterResponse?.data?.service_center;
 
@@ -292,8 +289,8 @@ const ServiceCenterDetailPage = ({ params }: ServiceCenterDetailPageProps) => {
                 <p className="text-2xl font-bold text-gray-900">
                   {totalAppointments > 0
                     ? Math.round(
-                        (completedAppointments / totalAppointments) * 100
-                      )
+                      (completedAppointments / totalAppointments) * 100
+                    )
                     : 0}
                   %
                 </p>
@@ -434,9 +431,8 @@ const ServiceCenterDetailPage = ({ params }: ServiceCenterDetailPageProps) => {
                           {getDayName(hour.day)}
                         </span>
                         <span
-                          className={`${
-                            hour.is_active ? "text-gray-900" : "text-gray-500"
-                          }`}
+                          className={`${hour.is_active ? "text-gray-900" : "text-gray-500"
+                            }`}
                         >
                           {hour.is_active
                             ? `${hour.open_time} - ${hour.close_time}`
@@ -483,9 +479,8 @@ const ServiceCenterDetailPage = ({ params }: ServiceCenterDetailPageProps) => {
                         </div>
                       </div>
                       <div
-                        className={`w-3 h-3 rounded-full ${
-                          mechanic.is_active ? "bg-green-500" : "bg-gray-300"
-                        }`}
+                        className={`w-3 h-3 rounded-full ${mechanic.is_active ? "bg-green-500" : "bg-gray-300"
+                          }`}
                       ></div>
                     </div>
                   ))}
@@ -561,8 +556,8 @@ const ServiceCenterDetailPage = ({ params }: ServiceCenterDetailPageProps) => {
                               <p className="text-xs text-gray-600">
                                 {appointment.appointment_date
                                   ? new Date(
-                                      appointment.appointment_date
-                                    ).toLocaleDateString()
+                                    appointment.appointment_date
+                                  ).toLocaleDateString()
                                   : "Date TBD"}
                               </p>
                             </div>
