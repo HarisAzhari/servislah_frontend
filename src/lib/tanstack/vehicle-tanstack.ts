@@ -17,7 +17,7 @@ export const useGetUserVehicles = () => {
     queryKey: ["vehicles"],
     queryFn: () =>
       getUserVehicles(
-        user?.backend_tokens?.access_token || user?.accessToken || ""
+        user?.backend_tokens?.access_token || ""
       ),
     enabled: !!user,
   });
@@ -29,7 +29,7 @@ export const useGetVehicleById = (id: string) => {
     queryKey: ["vehicle", id],
     queryFn: () =>
       getVehicleById(
-        user?.backend_tokens?.access_token || user?.accessToken || "",
+        user?.backend_tokens?.access_token || "",
         id
       ),
     enabled: !!user && !!id,
@@ -42,7 +42,7 @@ export const useGetVehicleByUserId = () => {
     queryKey: ["vehicles", user?.id],
     queryFn: () =>
       getVehicleByUserId(
-        user?.backend_tokens?.access_token || user?.accessToken || "",
+        user?.backend_tokens?.access_token || "",
         user?.id || ""
       ),
     enabled: !!user?.id,
@@ -56,7 +56,7 @@ export const useCreateVehicle = () => {
   return useMutation({
     mutationFn: (vehicle: CreateVehicleRequest) =>
       createVehicle(
-        user?.backend_tokens?.access_token || user?.accessToken || "",
+        user?.backend_tokens?.access_token || "",
         vehicle
       ),
     onSuccess: () => {
@@ -84,7 +84,7 @@ export const useUpdateVehicle = () => {
       vehicle: UpdateVehicleRequest;
     }) =>
       updateVehicle(
-        user?.backend_tokens?.access_token || user?.accessToken || "",
+        user?.backend_tokens?.access_token || "",
         id,
         vehicle
       ),
@@ -107,7 +107,7 @@ export const useDeleteVehicle = () => {
   return useMutation({
     mutationFn: (id: string) =>
       deleteVehicle(
-        user?.backend_tokens?.access_token || user?.accessToken || "",
+        user?.backend_tokens?.access_token || "",
         id
       ),
     onSuccess: () => {
