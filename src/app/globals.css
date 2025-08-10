@@ -117,8 +117,14 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overscroll-none;
   }
+}
+
+/* Prevent bounce/overscroll on root elements across devices */
+html, body, #__next {
+  height: 100%;
+  overscroll-behavior: none;
 }
 
 /* Smooth custom animations */

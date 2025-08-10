@@ -32,12 +32,28 @@ console.log('   🔢 appVersion:', config.appVersion);
 
 
 
-export const axiosInstance = (token: string): AxiosInstance => {
+export const axiosInstance = (token?: string): AxiosInstance => {
+  // Support pulling token from current session/localStorage if not provided
+  const sessionToken = typeof window !== 'undefined'
+    ? (token || (() => {
+        try {
+          const user = localStorage.getItem('user');
+          if (user) {
+            const parsed = JSON.parse(user);
+            return parsed?.backend_tokens?.access_token || parsed?.accessToken || localStorage.getItem('access_token') || '';
+          }
+          return localStorage.getItem('access_token') || '';
+        } catch {
+          return token || '';
+        }
+      })())
+    : (token || '');
+
   return axios.create({
     baseURL: 'https://servislahgetway-production.up.railway.app',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      ...(sessionToken ? { 'Authorization': `Bearer ${sessionToken}` } : {}),
     },
   });
 }

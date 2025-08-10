@@ -33,6 +33,7 @@ import { useAuthTanstack } from "@/lib/tanstack/auth-tanstack"
 import { NavigationLoadingProvider, useNavigationLoading } from "@/contexts/NavigationLoadingContext"
 import { MiniCarLoading } from "@/components/mini-car-loading"
 import { useDarkMode } from "@/contexts/DarkModeContext"
+import MobileBottomNav from "@/components/mobile-bottom-nav"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -367,28 +368,18 @@ const DashboardLayoutContent: React.FC<DashboardLayoutContentProps> = ({
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-900 dark:to-gray-800/30">
-      {/* Mobile menu button with better animation */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="backdrop-blur-sm bg-white/80 dark:bg-gray-900/80 border-white/20 dark:border-gray-700/20 hover:bg-white/90 dark:hover:bg-gray-900/90 transition-all duration-300 hover:scale-105 active:scale-95"
-        >
-          <div className="relative w-4 h-4">
-            <Menu className={`h-4 w-4 absolute transition-all duration-300 ${isMobileMenuOpen ? 'rotate-90 opacity-0' : 'rotate-0 opacity-100'}`} />
-            <X className={`h-4 w-4 absolute transition-all duration-300 ${isMobileMenuOpen ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0'}`} />
-          </div>
-        </Button>
+      {/* Sidebar is removed on mobile; hide old mobile toggle button */}
+      <div className="hidden">
+        <Button variant="outline" size="icon" />
       </div>
 
-      {/* Sidebar with enhanced animations - FIXED POSITIONING */}
+      {/* Sidebar with enhanced animations - FIXED POSITIONING (hidden on mobile) */}
       <div className={`
         fixed inset-y-0 left-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-xl transform transition-all duration-500 ease-out border-r border-gray-200/50 dark:border-gray-700/50
         ${isMobileMenuOpen ? 'translate-x-0 scale-100' : '-translate-x-full scale-95'}
         lg:translate-x-0 lg:scale-100
         ${isSidebarCollapsed ? 'lg:w-16' : 'lg:w-64'}
-        w-64
+        w-64 hidden lg:block
       `}>
         <div className="flex flex-col h-full">
           {/* Clean Professional Logo */}
@@ -489,7 +480,16 @@ const DashboardLayoutContent: React.FC<DashboardLayoutContentProps> = ({
         <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-sm border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-30">
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
-              <div className="flex-1 lg:hidden"></div>
+              <div className="flex-1 flex lg:hidden">
+                {/* Settings shortcut on the left for mobile */}
+                <Link
+                  href="/dashboard/settings"
+                  className="inline-flex items-center justify-center h-9 w-9 rounded-full text-gray-600 hover:text-[#363DFF] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  aria-label="Settings"
+                >
+                  <Settings className="h-5 w-5" />
+                </Link>
+              </div>
 
               <div className="flex items-center space-x-4 ml-auto">
                 {/* Enhanced notification bell */}
@@ -512,11 +512,17 @@ const DashboardLayoutContent: React.FC<DashboardLayoutContentProps> = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 border-gray-200/50 dark:border-gray-700/50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard/settings" className="w-full">
+                          <Settings className="h-4 w-4 mr-2" />
+                          Settings
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem className="hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 dark:hover:from-gray-800 dark:hover:to-blue-900/50 transition-all duration-200">
                         <User className="h-4 w-4 mr-2" />
                         Profile
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 dark:hover:from-red-900/50 dark:hover:to-red-800/50 transition-all duration-200">
                         <LogOut className="h-4 w-4 mr-2" />
                         Sign out
@@ -531,7 +537,7 @@ const DashboardLayoutContent: React.FC<DashboardLayoutContentProps> = ({
 
         {/* Enhanced Page content with smooth entry animation */}
         <main className="flex-1 overflow-auto">
-          <div className="px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="px-4 sm:px-6 lg:px-8 py-8 pb-24 lg:pb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {children}
           </div>
         </main>
@@ -544,6 +550,9 @@ const DashboardLayoutContent: React.FC<DashboardLayoutContentProps> = ({
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
+
+      {/* Bottom navigation for mobile (outside scroll area) */}
+      <MobileBottomNav />
     </div>
   )
 } 

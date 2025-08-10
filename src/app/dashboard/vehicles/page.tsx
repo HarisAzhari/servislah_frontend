@@ -54,13 +54,15 @@ const VehiclesPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Car className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+      <div className="relative -mx-4 sm:-mx-6 lg:-mx-8 -my-8">
+        <div className="flex items-center justify-center bg-gray-50 dark:bg-gray-900 min-h-[calc(100vh-4rem)] pb-24 lg:pb-0">
+          <div className="text-center">
+          <Car className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
             Failed to load vehicles
           </h2>
-          <p className="text-gray-600">Please try again later</p>
+          <p className="text-gray-600 dark:text-gray-400">Please try again later</p>
+          </div>
         </div>
       </div>
     );
@@ -68,12 +70,14 @@ const VehiclesPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Car className="w-12 h-12 text-gray-400 mx-auto mb-4 animate-pulse" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Loading vehicles...
-          </h2>
+      <div className="relative -mx-4 sm:-mx-6 lg:-mx-8 -my-8">
+        <div className="flex items-center justify-center bg-gray-50 dark:bg-gray-900 min-h-[calc(100vh-4rem)] pb-24 lg:pb-0">
+          <div className="text-center">
+            <Car className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4 animate-pulse" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              Loading vehicles...
+            </h2>
+          </div>
         </div>
       </div>
     );

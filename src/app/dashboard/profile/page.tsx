@@ -88,16 +88,14 @@ export default function ProfilePage() {
 
   const getRoleBadge = () => {
     const role = user?.role || 'USER'
-    const colorMap = {
-      'ADMIN': 'bg-gradient-to-r from-[#363DFF] to-purple-600',
-      'MECHANIC': 'bg-gradient-to-r from-[#363DFF] to-blue-600',
-      'USER': 'bg-gradient-to-r from-[#363DFF] to-indigo-600'
-    }
-    
+    const roleLabel = role === 'ADMIN' ? 'ADMIN' : role === 'MECHANIC' ? 'MECHANIC' : 'STAFF'
+
     return (
-      <Badge className={`${colorMap[role as keyof typeof colorMap]} text-white shadow-md`}>
+      <Badge
+        className="bg-white text-gray-900 dark:bg-white dark:text-black border border-gray-200 dark:border-transparent shadow-sm"
+      >
         {getRoleIcon()}
-        <span className="ml-1">{role}</span>
+        <span className="ml-1">{roleLabel}</span>
       </Badge>
     )
   }
@@ -126,20 +124,21 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900/50">
-      <div className="space-y-8">
+    <div className="relative -mx-4 sm:-mx-6 lg:-mx-8 -my-8">
+      <div className="min-h-[calc(100vh-4rem)] bg-gray-50/50 dark:bg-gray-900/50 pb-24 lg:pb-8 px-4 sm:px-6 lg:px-8">
+        <div className="space-y-8">
         {/* Enhanced Header */}
         <div className="opacity-0 animate-[fadeInUp_0.8s_ease-out_forwards]">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-[#363DFF] via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white pt-10">
             My Profile
           </h1>
-          <p className="text-gray-700 dark:text-gray-300 mt-2 text-lg font-medium">Manage your account and personal information 💖</p>
+          <p className="text-gray-700 dark:text-gray-300 mt-2 text-lg font-medium">Manage your account and personal information </p>
         </div>
 
       {/* Enhanced Profile Card */}
       <Card className="opacity-0 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards] shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200/60 dark:border-gray-700/60 bg-white dark:bg-gray-900">
         <CardHeader className="pb-6 border-b border-gray-100 dark:border-gray-800">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center space-x-6">
               <div className="relative">
                 <Avatar className="h-24 w-24 ring-4 ring-[#363DFF]/20 shadow-lg">
@@ -179,7 +178,7 @@ export default function ProfilePage() {
                 }
               }}
               variant={isEditing ? "outline" : "default"}
-              className="gap-2 h-12 px-6"
+              className="gap-2 h-11 px-5 w-full sm:w-auto"
               disabled={isLoading}
             >
               {isEditing ? (
@@ -374,6 +373,7 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+        </div>
       </div>
     </div>
   )

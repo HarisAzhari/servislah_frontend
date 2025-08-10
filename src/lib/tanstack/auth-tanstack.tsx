@@ -19,10 +19,26 @@ export const useAuthTanstack = () => {
       const savedUser = localStorage.getItem("user");
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
 
-        localStorage.setItem("user", JSON.stringify(parsedUser));
+        // Normalize shape so all consumers can read backend_tokens.*
+        let normalizedUser = parsedUser as any;
+        if (!normalizedUser.backend_tokens) {
+          const access = normalizedUser.accessToken || localStorage.getItem("access_token");
+          const refresh = normalizedUser.refreshToken || localStorage.getItem("refresh_token");
+          if (access || refresh) {
+            normalizedUser = {
+              ...normalizedUser,
+              backend_tokens: {
+                access_token: access || "",
+                refresh_token: refresh || "",
+              },
+            };
+          }
+        }
+
+        setUser(normalizedUser);
+        setIsAuthenticated(true);
+        localStorage.setItem("user", JSON.stringify(normalizedUser));
       } else {
         setUser(null);
         setIsAuthenticated(false);

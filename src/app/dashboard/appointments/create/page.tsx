@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Calendar,
   Clock,
@@ -23,10 +23,7 @@ import {
   useGetServiceCenters,
 } from "@/lib/tanstack/service-center.tanstack";
 import { toast } from "sonner";
-import {
-  useGetUserVehicles,
-  useGetVehicleByUserId,
-} from "@/lib/tanstack/vehicle-tanstack";
+import { useGetUserVehicles } from "@/lib/tanstack/vehicle-tanstack";
 import { CreateAppointmentRequest } from "@/types/appointment";
 import DefaultButton from "@/components/default-button";
 import { Input } from "@/components/ui/input";
@@ -40,13 +37,19 @@ const CreateAppointmentPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [serviceCenterId, setServiceCenterId] = useState<string | null>(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+  const [overflowingDescriptions, setOverflowingDescriptions] = useState<Record<string, boolean>>({});
+  const descriptionRefs = useRef<Record<string, HTMLParagraphElement | null>>({});
 
   const router = useRouter();
   const searchParams = useSearchParams();
   useEffect(() => {
-    const serviceCenterId = searchParams.get("service_center_id");
-    if (serviceCenterId) {
-      setServiceCenterId(serviceCenterId);
+    const id = searchParams.get("service_center_id");
+    if (id) {
+      setServiceCenterId(id);
+    } else {
+      // Clear when query param removed (e.g., back navigation)
+      setServiceCenterId(null);
     }
   }, [searchParams]);
 
@@ -66,11 +69,11 @@ const CreateAppointmentPage: React.FC = () => {
   const { mutate: createAppointment, isPending: isCreatingAppointment } =
     useCreateAppointment();
 
-  const { data: vehicles } = useGetVehicleByUserId();
+  const { data: vehiclesData } = useGetUserVehicles();
 
   const availableServices: Service[] = serviceCenter?.services || [];
 
-  const userVehicles: Vehicle[] = vehicles || [];
+  const userVehicles: Vehicle[] = (vehiclesData as any)?.vehicles || vehiclesData || [];
 
   const availableTimes: string[] = [
     "08:00",
@@ -138,11 +141,30 @@ const CreateAppointmentPage: React.FC = () => {
     selectedDate !== "" &&
     selectedTime !== "";
 
+  // Measure description overflow on mobile to decide whether to show View more
+  useEffect(() => {
+    const measure = () => {
+      const next: Record<string, boolean> = {};
+      (serviceCenter?.services || []).forEach((s: Service) => {
+        const el = descriptionRefs.current[s.id];
+        if (el) {
+          const isOverflow = el.scrollHeight > el.clientHeight + 1; // small buffer
+          next[s.id] = isOverflow;
+        }
+      });
+      setOverflowingDescriptions(next);
+    };
+    // allow layout to settle
+    const r = requestAnimationFrame(measure);
+    return () => cancelAnimationFrame(r);
+  }, [serviceCenter]);
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="relative -mx-4 sm:-mx-6 lg:-mx-8 -my-8">
+      <div className="min-h-[calc(100vh-4rem)] bg-gray-50 dark:bg-gray-900 pb-24 lg:pb-8 px-4 sm:px-6 lg:px-8">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl mt-3 sm:mt-4">
+        <div className="px-4 py-6">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
@@ -150,7 +172,7 @@ const CreateAppointmentPage: React.FC = () => {
             >
               <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             </button>
-            <div>
+            <div >
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Book Appointment
               </h1>
@@ -162,11 +184,11 @@ const CreateAppointmentPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="px-0 py-8">
         {!serviceCenterId ? (
           <div className="space-y-6">
             {/* Search Bar */}
-            <div className="relative flex-1 max-w-md">
+            <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search service centers..."
@@ -174,7 +196,7 @@ const CreateAppointmentPage: React.FC = () => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setSearchTerm(e.target.value)
                 }
-                className="pl-10 h-9 text-sm border-gray-300 focus:border-[#363DFF] focus:ring-[#363DFF]/20 transition-colors"
+                className="pl-10 h-11 text-sm border-gray-300 focus:border-[#363DFF] focus:ring-[#363DFF]/20 transition-colors"
               />
             </div>
 
@@ -184,10 +206,10 @@ const CreateAppointmentPage: React.FC = () => {
                 (center: ServiceCenter, index: number) => (
                   <div
                     key={center.id}
-                    className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200"
+                    className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200"
                   >
                     <div className="p-6">
-                      <div className="flex items-start justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between mb-3">
                             <div>
@@ -215,7 +237,7 @@ const CreateAppointmentPage: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center space-x-3 ml-6">
+                        <div className="sm:ml-6 w-full sm:w-auto">
                           <Button
                             onClick={() =>
                               router.push(
@@ -223,7 +245,7 @@ const CreateAppointmentPage: React.FC = () => {
                               )
                             }
                             size="sm"
-                            className="bg-[#363DFF] hover:bg-[#363DFF]/90 text-white px-4 h-9 text-sm font-medium"
+                            className="bg-[#363DFF] hover:bg-[#363DFF]/90 text-white h-10 px-4 text-sm font-semibold rounded-full w-full sm:w-auto"
                           >
                             <Car className="h-4 w-4 mr-2" />
                             Book Service
@@ -239,14 +261,46 @@ const CreateAppointmentPage: React.FC = () => {
         ) : (
           <>
             {/* Progress Steps */}
-            <div className="mb-8">
-              <div className="flex items-center justify-center">
+            <div className="mb-6 sm:mb-8">
+              {/* Mobile: compact, all 4 visible without scrolling */}
+              <div className="sm:hidden grid grid-cols-4 gap-2 w-full">
+                {[
+                  { step: 1, label: "Services" },
+                  { step: 2, label: "Vehicle" },
+                  { step: 3, label: "Date" },
+                  { step: 4, label: "Review" },
+                ].map((item) => (
+                  <div key={item.step} className="flex flex-col items-center">
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                        currentStep >= item.step
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-300"
+                      }`}
+                    >
+                      <span className="text-xs font-semibold">{item.step}</span>
+                    </div>
+                    <span
+                      className={`mt-1 text-[11px] leading-none font-medium ${
+                        currentStep >= item.step
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-gray-500 dark:text-gray-400"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop/tablet: original with connectors */}
+              <div className="hidden sm:flex items-center justify-center">
                 <div className="flex items-center space-x-8">
                   {[
-                    { step: 1, label: "Services", icon: "🔧" },
-                    { step: 2, label: "Vehicle", icon: "🚗" },
-                    { step: 3, label: "Date & Time", icon: "📅" },
-                    { step: 4, label: "Review", icon: "✅" },
+                    { step: 1, label: "Services" },
+                    { step: 2, label: "Vehicle" },
+                    { step: 3, label: "Date & Time" },
+                    { step: 4, label: "Review" },
                   ].map((item, index) => (
                     <div key={item.step} className="flex items-center">
                       <div
@@ -287,15 +341,13 @@ const CreateAppointmentPage: React.FC = () => {
               <div className="lg:col-span-2">
                 {/* Step 1: Service Selection */}
                 {currentStep === 1 && (
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-sm">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                       Select Services
                     </h2>
                     <div className="space-y-4">
                       {availableServices.map((service: Service) => {
-                        const isSelected = selectedServices.find(
-                          (s) => s.id === service.id
-                        );
+                        const isSelected = selectedServices.some((s) => s.id === service.id);
                         return (
                           <div
                             key={service.id}
@@ -306,62 +358,80 @@ const CreateAppointmentPage: React.FC = () => {
                                 : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                             }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-3">
-                                  <div
-                                    className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                                      isSelected
-                                        ? "border-blue-600 bg-blue-600"
-                                        : "border-gray-300"
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  {/* Mobile: no checkbox, show Selected pill */}
+                                  {isSelected && (
+                                    <span className="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-600 text-white sm:hidden">
+                                      Selected
+                                    </span>
+                                  )}
+                                  <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                                    {service.name}
+                                  </h3>
+                                </div>
+                                <p
+                                  ref={(el) => {
+                                    descriptionRefs.current[service.id] = el;
+                                  }}
+                                  className={`text-sm text-gray-600 dark:text-gray-300 ${
+                                  expandedDescriptions[service.id] ? '' : 'line-clamp-2'
+                                } sm:line-clamp-none`}
+                                >
+                                  {service.description}
+                                </p>
+                                {/* Mobile only: View more / less toggle */}
+                                {overflowingDescriptions[service.id] && (
+                                  <Button
+                                    variant="link"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setExpandedDescriptions((prev) => ({
+                                        ...prev,
+                                        [service.id]: !prev[service.id],
+                                      }));
+                                    }}
+                                    className="sm:hidden mt-1 px-0 h-auto text-blue-600 dark:text-blue-400 underline-offset-4 hover:underline"
+                                  >
+                                    {expandedDescriptions[service.id] ? "View less" : "View more"}
+                                  </Button>
+                                )}
+                                <div className="flex items-center gap-3 mt-2">
+                                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                                    <Clock className="w-4 h-4 inline mr-1" />
+                                    {service.duration} min
+                                  </span>
+                                  <span
+                                    className={`text-sm px-2 py-1 rounded ${
+                                      service.is_active
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-gray-100 text-gray-800"
                                     }`}
                                   >
-                                    {isSelected && (
-                                      <Check className="w-3 h-3 text-white" />
-                                    )}
-                                  </div>
-                                  <div>
-                                    <h3 className="font-medium text-gray-900 dark:text-white">
-                                      {service.name}
-                                    </h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                                      {service.description}
-                                    </p>
-                                    <div className="flex items-center gap-4 mt-2">
-                                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        <Clock className="w-4 h-4 inline mr-1" />
-                                        {service.duration} min
-                                      </span>
-                                      <span
-                                        className={`text-sm px-2 py-1 rounded ${
-                                          service.is_active
-                                            ? "bg-green-100 text-green-800"
-                                            : "bg-gray-100 text-gray-800"
-                                        }`}
-                                      >
-                                        {service.is_active
-                                          ? "Active"
-                                          : "Inactive"}
-                                      </span>
-                                    </div>
-                                  </div>
+                                    {service.is_active ? "Active" : "Inactive"}
+                                  </span>
                                 </div>
                               </div>
-                              <div className="text-right">
-                                <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                  RM {service.price}
-                                </p>
+                              <div className="text-right shrink-0 ml-2">
+                                {isSelected && (
+                                  <span className="hidden sm:inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-600 text-white mb-1">
+                                    Selected
+                                  </span>
+                                )}
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">RM {service.price}</p>
                               </div>
                             </div>
                           </div>
                         );
                       })}
                     </div>
-                    <div className="mt-6 flex justify-end">
+                    <div className="mt-4 sm:mt-6 flex justify-end">
                       <button
                         onClick={() => setCurrentStep(2)}
                         disabled={selectedServices.length === 0}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                       >
                         Continue
                       </button>
@@ -371,7 +441,7 @@ const CreateAppointmentPage: React.FC = () => {
 
                 {/* Step 2: Vehicle Selection */}
                 {currentStep === 2 && (
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-sm">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                       Select Vehicle
                     </h2>
@@ -413,17 +483,17 @@ const CreateAppointmentPage: React.FC = () => {
                         </div>
                       ))}
                     </div>
-                    <div className="mt-6 flex justify-between">
+                    <div className="mt-4 sm:mt-6 flex justify-between">
                       <button
                         onClick={() => setCurrentStep(1)}
-                        className="px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        className="px-4 sm:px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         Back
                       </button>
                       <button
                         onClick={() => setCurrentStep(3)}
                         disabled={!selectedVehicle}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                       >
                         Continue
                       </button>
@@ -433,7 +503,7 @@ const CreateAppointmentPage: React.FC = () => {
 
                 {/* Step 3: Date & Time Selection */}
                 {currentStep === 3 && (
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-sm">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                       Select Date & Time
                     </h2>
@@ -443,13 +513,15 @@ const CreateAppointmentPage: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Preferred Date
                       </label>
-                      <input
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        min={new Date().toISOString().split("T")[0]}
-                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
+                      <div className="w-full">
+                        <input
+                          type="date"
+                          value={selectedDate}
+                          onChange={(e) => setSelectedDate(e.target.value)}
+                          min={new Date().toISOString().split("T")[0]}
+                          className="w-full h-10 px-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
                     </div>
 
                     {/* Time Selection */}
@@ -457,12 +529,12 @@ const CreateAppointmentPage: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Preferred Time
                       </label>
-                      <div className="grid grid-cols-4 gap-3">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3">
                         {availableTimes.map((time: string) => (
                           <button
                             key={time}
                             onClick={() => setSelectedTime(time)}
-                            className={`p-3 text-sm rounded-lg border transition-colors ${
+                            className={`h-10 px-2 text-sm rounded-md border transition-colors ${
                               selectedTime === time
                                 ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
                                 : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -474,17 +546,17 @@ const CreateAppointmentPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="mt-6 flex justify-between">
+                    <div className="mt-4 sm:mt-6 flex justify-between">
                       <button
                         onClick={() => setCurrentStep(2)}
-                        className="px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        className="px-4 sm:px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         Back
                       </button>
                       <button
                         onClick={() => setCurrentStep(4)}
                         disabled={!selectedDate || !selectedTime}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                       >
                         Continue
                       </button>
@@ -494,7 +566,7 @@ const CreateAppointmentPage: React.FC = () => {
 
                 {/* Step 4: Review & Confirm */}
                 {currentStep === 4 && (
-                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-sm">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                       Review Appointment
                     </h2>
@@ -557,7 +629,7 @@ const CreateAppointmentPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="mt-6 flex justify-between">
+                    <div className="mt-4 sm:mt-6 flex justify-between">
                       <button
                         onClick={() => setCurrentStep(3)}
                         className="px-6 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -642,6 +714,7 @@ const CreateAppointmentPage: React.FC = () => {
             </div>
           </>
         )}
+      </div>
       </div>
     </div>
   );

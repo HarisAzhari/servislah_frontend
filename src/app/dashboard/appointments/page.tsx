@@ -85,7 +85,7 @@ export default function AppointmentsPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="opacity-0 animate-[fadeInUp_0.8s_ease-out_0.5s_forwards]">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="w-full">
           <TabsTrigger value="all">All ({appointmentsData.length})</TabsTrigger>
           <TabsTrigger value="confirmed">
             Confirmed ({appointmentsData.filter((a: Appointment) => a.status === "CONFIRMED").length})
