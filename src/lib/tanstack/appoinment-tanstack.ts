@@ -16,6 +16,7 @@ import { useAuthTanstack } from "./auth-tanstack";
 import { useRouter } from "next/navigation";
 import { User } from "@/types/user";
 import { DEFAULT_TOKEN } from "../constant";
+import { getUserByIdWithToken } from "../services/user-api.service";
 
 // Helper function to get access token from either auth system
 const getAccessToken = (user: any): string => {
@@ -45,23 +46,22 @@ export const useCreateAppointment = () => {
       if (!user) {
         throw new Error("User are not authenticated");
       }
-      appointment.user_id = user.id;
+      // Align with backend contract: expects `customer_id`
+      let customerId: string | null = (user as any).customer_id || null;
+      if (!customerId) {
+        try {
+          const userDetail = await getUserByIdWithToken(getAccessToken(user), user.id);
+          customerId = userDetail?.customer?.id || null;
+        } catch (e) {
+          // ignore; fallback to user.id
+        }
+      }
+      (appointment as any).customer_id = customerId || user.id;
 
       const token = getAccessToken(user);
 
-      // Debug logging
-      console.log("🔍 Creating appointment with data:", appointment);
-      console.log("🔍 User ID:", user.id);
-      console.log("🔑 Using token for appointment:", {
-        hasUser: !!user,
-        tokenLength: token.length,
-        tokenSource: user?.backend_tokens?.access_token
-          ? "useAuthTanstack"
-          : typeof window !== "undefined" &&
-            localStorage.getItem("access_token")
-          ? "localStorage"
-          : "default",
-      });
+      // Only log final outbound payload (for debugging API body)
+      console.log("Sending create appointment:", appointment);
 
       const respones = await createAppointment(token, appointment);
       console.log("✅ Appointment created successfully:", respones);

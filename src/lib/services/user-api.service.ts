@@ -34,3 +34,9 @@ export const getUserByEmail = async (email: string): Promise<User> => {
     const response = await axiosInstance(DEFAULT_TOKEN).get(`/users/email/${email}`);
     return response.data.user;
 }
+
+// Authenticated variant that uses the current session token
+export const getUserByIdWithToken = async (token: string, id: string): Promise<any> => {
+    const response = await axiosInstance(token).get(`/users/${id}`);
+    return response.data.user;
+}

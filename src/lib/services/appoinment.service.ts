@@ -9,38 +9,25 @@ export const createAppointment = async (
   token: string,
   appointment: CreateAppointmentRequest
 ) => {
-  console.log("🚀 Making API call to create appointment");
-  console.log("🔍 Token:", token ? "Available" : "Missing");
-  console.log("🔍 Token length:", token?.length);
-  console.log(
-    "🔍 Token preview:",
-    token ? `${token.substring(0, 20)}...` : "No token"
-  );
-  console.log("🔍 Authorization header:", `Bearer ${token}`);
-  console.log("🔍 Appointment data:", appointment);
-  console.log("📋 JSON payload:", JSON.stringify(appointment, null, 2));
+  // Only log the final payload we're sending (per request)
 
   try {
+    // The API expects `customer_id` instead of `user_id`
+    const body = {
+      service_center_id: appointment.service_center_id,
+      customer_id: (appointment as any).customer_id || appointment.user_id,
+      vehicle_id: appointment.vehicle_id,
+      date: appointment.date,
+      time: appointment.time,
+      items: appointment.items,
+    };
+
     const response = await axiosInstance(token).post(
       "/appointments",
-      appointment
-    );
-    console.log("✅ API response:", response.data);
-    console.log(
-      "📋 API response JSON:",
-      JSON.stringify(response.data, null, 2)
+      body
     );
     return response.data.data.appoinments;
   } catch (error: any) {
-    console.error("❌ API call failed:", error);
-    if (error?.response) {
-      console.error("❌ Error response:", error.response.data);
-      console.error(
-        "📋 Error response JSON:",
-        JSON.stringify(error.response.data, null, 2)
-      );
-      console.error("❌ Status code:", error.response.status);
-    }
     throw error;
   }
 };
